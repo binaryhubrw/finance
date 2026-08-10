@@ -1,0 +1,251 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper:       #eef0ea;
+  --color-surface:     #ffffff;
+  --color-sunk:        #f8f9f5;
+  --color-ink:         #12171c;
+  --color-ink-soft:    #47514e;
+  --color-muted:       #79817b;
+  --color-rule:        #dcdfd6;
+  --color-rule-strong: #c3c7bc;
+  --color-credit:      #12664a;   /* money in */
+  --color-debit:       #a03528;   /* money out */
+  --color-accent:      #1f4b5c;   /* interactive */
+  --color-flag:        #8a6410;   /* awaiting review */
+
+  --font-sans: var(--font-instrument), "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, monospace;
+
+  --radius-sm: 3px;
+  --radius-md: 6px;
+
+  /* The width at which the sidebar becomes a horizontal bar. Written in rem so it
+     sorts after sm and md rather than ahead of them. 53.75rem = 860px. */
+  --breakpoint-nav: 53.75rem;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-rule);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3 {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  /* Every figure stacks in a column. */
+  table {
+    font-variant-numeric: tabular-nums;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--color-rule-strong);
+  }
+
+  input, select, textarea, button {
+    font: inherit;
+    color: inherit;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* 10px mono, uppercase — field labels, table headers, stat labels */
+  .label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    line-height: 1.4;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-ink-soft);
+  }
+
+  .label-quiet {
+    color: var(--color-muted);
+  }
+
+  .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-md);
+  }
+
+  .rule {
+    border-color: var(--color-rule);
+  }
+
+  /* ---- controls ---- */
+  .field {
+    width: 100%;
+    background: var(--color-surface);
+    border: 1px solid var(--color-rule-strong);
+    border-radius: var(--radius-sm);
+    padding: 7px 9px;
+    font-size: 14px;
+    color: var(--color-ink);
+    transition: border-color 120ms ease;
+  }
+  .field::placeholder { color: var(--color-muted); }
+  .field:hover:not(:disabled) { border-color: var(--color-ink-soft); }
+  .field:disabled { background: var(--color-sunk); color: var(--color-muted); }
+  .field-num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .field-error { border-color: var(--color-debit); }
+
+  select.field {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--color-ink-soft) 50%),
+                      linear-gradient(135deg, var(--color-ink-soft) 50%, transparent 50%);
+    background-position: calc(100% - 15px) 55%, calc(100% - 10px) 55%;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 28px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 1px solid var(--color-rule-strong);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    padding: 7px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-ink);
+    cursor: pointer;
+    transition: background-color 120ms ease, border-color 120ms ease;
+    white-space: nowrap;
+  }
+  .btn:hover:not(:disabled) { background: var(--color-sunk); border-color: var(--color-ink-soft); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-primary {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: #ffffff;
+  }
+  .btn-primary:hover:not(:disabled) { background: #163846; border-color: #163846; }
+
+  .btn-credit {
+    background: var(--color-credit);
+    border-color: var(--color-credit);
+    color: #ffffff;
+  }
+  .btn-credit:hover:not(:disabled) { background: #0e5039; border-color: #0e5039; }
+
+  .btn-debit {
+    background: var(--color-surface);
+    border-color: var(--color-debit);
+    color: var(--color-debit);
+  }
+  .btn-debit:hover:not(:disabled) { background: #fbf2f1; }
+
+  .btn-sm { padding: 4px 9px; font-size: 12px; }
+
+  .link {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+  }
+  .link:hover { text-decoration-thickness: 2px; }
+
+  /* ---- badges (the one place radius may exceed 6px) ---- */
+  .badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    line-height: 1.6;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 1px 6px;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .badge-pending  { color: var(--color-flag); }
+  .badge-approved { color: var(--color-credit); }
+  .badge-rejected { color: var(--color-debit); }
+  .badge-void     { color: var(--color-muted); }
+
+  /* ---- tables ---- */
+  .t {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  .t thead th {
+    background: var(--color-sunk);
+    border-bottom: 1px solid var(--color-rule-strong);
+    padding: 8px 12px;
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-ink-soft);
+    font-weight: 400;
+    white-space: nowrap;
+  }
+  .t tbody td {
+    border-bottom: 1px solid var(--color-rule);
+    padding: 11px 12px;
+    vertical-align: top;
+  }
+  .t tbody tr:last-child td { border-bottom: 0; }
+
+  /* ---- collapsible sections ---- */
+  summary::-webkit-details-marker { display: none; }
+  .when-open { display: none; }
+  details[open] > summary .when-open { display: inline; }
+  details[open] > summary .when-closed { display: none; }
+
+  /* The balance rail — the ruled balance column of a cashbook. */
+  .rail {
+    background: var(--color-sunk);
+    border-left: 1px solid var(--color-rule-strong);
+  }
+}
+
+/* The sidebar is fixed on wide screens and a bar on narrow ones. */
+@media (min-width: 860px) {
+  .shell-main { margin-left: 232px; }
+}
