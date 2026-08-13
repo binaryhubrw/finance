@@ -112,6 +112,12 @@ export const SignOutIcon = (props) => (
 );
 
 /** The wordmark's square — a stylised binary/circuit node. */
+export const CloseIcon = (props) => (
+  <Glyph {...props}>
+    <path d="M6 6l12 12M18 6L6 18" />
+  </Glyph>
+);
+
 export const BrandMark = ({ size = 32, className = '' }) => (
   <svg viewBox="0 0 32 32" width={size} height={size} aria-hidden="true" className={className}>
     <rect width="32" height="32" rx="9" fill="url(#brand-mark)" />
