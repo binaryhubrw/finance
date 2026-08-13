@@ -17,6 +17,24 @@ Amounts are in **RWF** (set with `CURRENCY`).
 
 ---
 
+## Documentation
+
+This README is for whoever runs the system. The two documents below are for the people who
+use it, and are worth handing to a new accountant or auditor on their first day.
+
+| Document | Covers |
+|---|---|
+| [MANUAL.md](MANUAL.md) | How the system works: the four roles, the five rules, the life of an entry, each screen, the monthly routine, and the messages people hit. |
+| [SCREENS.md](SCREENS.md) | Every control on every screen — what each button does and which roles can use it. |
+
+Both are also published as web pages under `docs/`. `docs/manual.html` and
+`docs/screens.html` are built by `node docs/build-manual.mjs` and `node docs/build-screens.mjs`,
+which inline the two webfonts so the pages carry no external dependencies. Run `npm run build`
+first — the scripts read the font files that `next/font` fetched. Edit the matching
+`*.template.html`, not the built output.
+
+---
+
 ## Who does what
 
 | Role | Can do |
