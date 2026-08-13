@@ -14,3 +14,4 @@ yarn-error.log*
 *.pem
 next-env.d.ts
 .tsbuildinfo
+.claude

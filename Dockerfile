@@ -6,6 +6,10 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
+
+# The repo has no static assets yet, so guarantee the dir exists for the runtime COPY.
+RUN mkdir -p public
+
 RUN npm run build
 
 # Drop devDependencies so the runtime image only carries what `next start` needs.
