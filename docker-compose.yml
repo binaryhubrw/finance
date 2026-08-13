@@ -6,6 +6,9 @@ services:
     container_name: finance-hb
     ports:
       - "3010:3000"
+    # Secrets live only on the server, never in the image.
+    env_file:
+      - .env
     environment:
       NODE_ENV: production
     restart: unless-stopped
