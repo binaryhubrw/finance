@@ -21,9 +21,9 @@ export default function Bars({ rows, emptyMessage = 'Nothing to show yet.' }) {
           <div className="space-y-1.5">
             {row.values.map((value) => (
               <div key={value.name} className="flex items-center gap-2">
-                <div className="h-2.5 min-w-0 flex-1 bg-sunk">
+                <div className="h-2.5 min-w-0 flex-1 overflow-hidden rounded-full bg-sunk">
                   <div
-                    className={value.tone === 'in' ? 'h-full bg-credit' : 'h-full bg-debit'}
+                    className={value.tone === 'in' ? 'h-full rounded-full bg-credit' : 'h-full rounded-full bg-debit'}
                     style={{ width: `${Math.max(Math.abs(value.value) / max, 0) * 100}%` }}
                     role="presentation"
                   />

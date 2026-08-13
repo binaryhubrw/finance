@@ -53,8 +53,8 @@ export default async function LedgerPage({ searchParams }) {
     <div className="space-y-5">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="label">Ledger</p>
-          <h1 className="mt-1 text-[22px]">Cash book</h1>
+          <p className="eyebrow">Ledger</p>
+          <h1 className="page-title mt-1">Cash book</h1>
           <p className="mt-1 text-[13px] text-ink-soft">
             Every entry, in date order. Only approved entries move the balance column.
           </p>

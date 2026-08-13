@@ -2,7 +2,7 @@
 
 // In production Next redacts the message, so this only narrows things down in
 // development. The fallback wording has to stand on its own either way.
-const OFFLINE = /Mongo|ECONNREFUSED|ETIMEDOUT|ENOTFOUND|querySrv/i;
+const OFFLINE = /Mongo|ECONNREFUSED|ETIME(D)?OUT|ENOTFOUND|EAI_AGAIN|querySrv/i;
 
 export default function ErrorPanel({ error, reset }) {
   const offline = OFFLINE.test(error?.message ?? '');
@@ -10,7 +10,7 @@ export default function ErrorPanel({ error, reset }) {
   return (
     <div className="card px-5 py-8">
       <p className="label">{offline ? 'Database' : 'Error'}</p>
-      <h1 className="mt-1 text-[22px]">
+      <h1 className="page-title mt-1">
         {offline ? 'The book cannot be reached' : 'That did not load'}
       </h1>
       <p className="mt-2 max-w-prose text-[13px] text-ink-soft">

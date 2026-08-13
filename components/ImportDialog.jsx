@@ -92,7 +92,7 @@ export default function ImportDialog({ open, onClose, categories }) {
     >
       {state.status === 'done' ? (
         <div>
-          <p className="text-[15px]">
+          <p className="text-[16px] font-semibold tracking-[-0.02em]">
             {state.result.imported} {state.result.imported === 1 ? 'entry' : 'entries'} imported
             from {state.result.filename}.
           </p>

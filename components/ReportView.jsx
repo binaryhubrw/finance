@@ -130,32 +130,32 @@ export default function ReportView({ summary, range }) {
         </div>
       </section>
 
-      <section className="card grid grid-cols-2 divide-y divide-rule nav:grid-cols-5 nav:divide-y-0">
-        <div className="border-l border-rule px-4 py-3 first:border-l-0">
+      <section className="grid grid-cols-2 gap-4 nav:grid-cols-5">
+        <div className="card px-4 py-4">
           <p className="label">Opening balance</p>
           <p className="mt-2">
             <Money value={summary.openingBalance} />
           </p>
         </div>
-        <div className="border-l border-rule px-4 py-3">
+        <div className="card px-4 py-4">
           <p className="label">Money in</p>
           <p className="mt-2">
             <Money value={summary.moneyIn} tone="in" />
           </p>
         </div>
-        <div className="border-l border-rule px-4 py-3">
+        <div className="card px-4 py-4">
           <p className="label">Money out</p>
           <p className="mt-2">
             <Money value={summary.moneyOut} tone="out" />
           </p>
         </div>
-        <div className="border-l border-rule px-4 py-3">
+        <div className="card px-4 py-4">
           <p className="label">Net</p>
           <p className="mt-2">
             <Money value={summary.net} tone={summary.net < 0 ? 'out' : 'in'} />
           </p>
         </div>
-        <div className="border-l border-rule px-4 py-3">
+        <div className="card tint-accent border-accent/15 px-4 py-4">
           <p className="label">Closing balance</p>
           <p className="mt-2">
             <Money value={summary.closingBalance} size="xl" />
@@ -172,7 +172,7 @@ export default function ReportView({ summary, range }) {
       <div className="grid gap-6 nav:grid-cols-2">
         <section className="card px-4 py-4">
           <div className="flex items-baseline justify-between gap-3">
-            <h2 className="text-[15px]">Spending by budget line</h2>
+            <h2 className="text-[16px] font-semibold tracking-[-0.02em]">Spending by budget line</h2>
             <button
               type="button"
               className="btn btn-sm"
@@ -204,7 +204,7 @@ export default function ReportView({ summary, range }) {
 
         <section className="card px-4 py-4">
           <div className="flex items-baseline justify-between gap-3">
-            <h2 className="text-[15px]">Income by budget line</h2>
+            <h2 className="text-[16px] font-semibold tracking-[-0.02em]">Income by budget line</h2>
             <button
               type="button"
               className="btn btn-sm"
@@ -236,7 +236,7 @@ export default function ReportView({ summary, range }) {
 
       <section className="card">
         <div className="flex items-baseline justify-between gap-3 px-4 py-3">
-          <h2 className="text-[15px]">Payment methods</h2>
+          <h2 className="text-[16px] font-semibold tracking-[-0.02em]">Payment methods</h2>
           <button
             type="button"
             className="btn btn-sm"
@@ -294,7 +294,7 @@ export default function ReportView({ summary, range }) {
 
       <section className="card">
         <div className="flex items-baseline justify-between gap-3 px-4 py-3">
-          <h2 className="text-[15px]">Month by month</h2>
+          <h2 className="text-[16px] font-semibold tracking-[-0.02em]">Month by month</h2>
           <button
             type="button"
             className="btn btn-sm"

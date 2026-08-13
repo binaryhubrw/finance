@@ -57,7 +57,7 @@ export function AccountPanel({ user }) {
 
   return (
     <section className="card px-4 py-4">
-      <h2 className="text-[15px]">Your account</h2>
+      <h2 className="text-[16px] font-semibold tracking-[-0.02em]">Your account</h2>
       <p className="mt-1 text-[12px] text-ink-soft">
         Signed in as {user.name} · {ROLE_LABELS[user.role]}
       </p>
@@ -129,7 +129,7 @@ export function CategoriesPanel({ categories }) {
   return (
     <section className="card">
       <div className="px-4 py-4">
-        <h2 className="text-[15px]">Budget lines</h2>
+        <h2 className="text-[16px] font-semibold tracking-[-0.02em]">Budget lines</h2>
         <p className="mt-1 text-[12px] text-ink-soft">
           Every entry sits on a line. Lines in use cannot be removed — deactivate them instead and
           they stay on old entries.
@@ -337,7 +337,7 @@ export function PeoplePanel({ people, currentUserId }) {
   return (
     <section className="card">
       <div className="px-4 py-4">
-        <h2 className="text-[15px]">People</h2>
+        <h2 className="text-[16px] font-semibold tracking-[-0.02em]">People</h2>
         <p className="mt-1 text-[12px] text-ink-soft">
           Separation of duties is the point: whoever records the money should not be the person who
           approves it.
@@ -566,7 +566,7 @@ export function PeriodsPanel({ months, periods, canReopen }) {
   return (
     <section className="card">
       <div className="px-4 py-4">
-        <h2 className="text-[15px]">Close a month</h2>
+        <h2 className="text-[16px] font-semibold tracking-[-0.02em]">Close a month</h2>
         <p className="mt-1 text-[12px] text-ink-soft">
           Closing freezes every entry dated inside the month. Clear the approval queue first, then
           count the cash and record what you actually hold.

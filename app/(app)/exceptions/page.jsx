@@ -13,8 +13,8 @@ export default async function ExceptionsPage({ searchParams }) {
   if (user.role === 'accountant') {
     return (
       <div className="card px-5 py-8">
-        <p className="label">Exceptions</p>
-        <h1 className="mt-1 text-[22px]">This section is for the auditor</h1>
+        <p className="eyebrow">Exceptions</p>
+        <h1 className="page-title mt-1">This section is for the auditor</h1>
         <p className="mt-2 text-[13px] text-ink-soft">
           It lists the entries a reviewer should look at twice. Keep receipt references on every
           expense and most of it stays empty.
@@ -40,8 +40,8 @@ export default async function ExceptionsPage({ searchParams }) {
   return (
     <div className="space-y-4">
       <header>
-        <p className="label">Exceptions</p>
-        <h1 className="mt-1 text-[22px]">What to look at twice</h1>
+        <p className="eyebrow">Exceptions</p>
+        <h1 className="page-title mt-1">What to look at twice</h1>
         <p className="mt-1 text-[13px] text-ink-soft">
           {totalFlagged === 0
             ? 'Nothing is flagged. The book is clean for this range.'

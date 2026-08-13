@@ -1,4 +1,4 @@
-# Hub Ledger
+# UR Binary Hub — Finance
 
 A cashbook for a coworking and innovation hub in Kigali. The accountant records every franc
 in and out, with a date, budget line, payment method and receipt reference. The auditor
@@ -40,6 +40,29 @@ see all of it; auditors see the monthly close, because closing months is their j
 can reach it to change their own password.
 
 ---
+
+## Design
+
+The interface carries UR Binary Hub branding: a deep blue primary (`#123c7a`) with teal
+accents for the innovation side of the hub, a near-white canvas, navy text, rounded cards
+with subtle shadows, a hand-drawn icon set and generous spacing. The brand gradient and the
+faint circuit grid appear on the sidebar and the login pane.
+
+Two rules survive from the earlier cashbook design because they are not decoration:
+
+- **Green and red only ever mean direction of money.** Credit green (`#0f7a54`) and debit red
+  (`#c0392b`) are never used for emphasis, status or anything else. Teal fills the accent role
+  they would otherwise be pulled into.
+- **Every figure is tabular monospace and right-aligned**, and the running-balance column
+  keeps its own ruled, tinted lane. Digits that do not stack in a column are a real defect in
+  a ledger, not a cosmetic one.
+
+The tokens live in the `@theme` block in `app/globals.css`; nothing else hard-codes a colour.
+Icons are hand-drawn inline SVG in `components/Icons.jsx` rather than an icon package.
+
+> This supersedes §10 of `BUILD.md`, which specified a paper-and-ink cashbook aesthetic and
+> forbade gradients, rounded cards with shadows and icons. That section was overridden
+> deliberately in favour of the UR Binary Hub brand direction.
 
 ## Prerequisites
 
@@ -110,6 +133,34 @@ needs a hard limit, move the counter into MongoDB or Redis.
 
 ---
 
+## Importing a spreadsheet
+
+The ledger's **Import a sheet** button takes an `.xlsx` straight from Excel, Numbers or
+Google Sheets, or a `.csv`. Download the template from the dialog, fill in one row per entry,
+and upload it.
+
+| Column | Required | Notes |
+|---|---|---|
+| Date | yes | `dd/mm/yyyy`, `yyyy-mm-dd`, or a real Excel date cell |
+| Direction | yes | `in` or `out` (also accepts Money in / income / expense / credit / debit) |
+| Amount | yes | `45000`, `45,000` and `45 000` all work; no currency code needed |
+| Budget line | yes | Must match an active budget line by name |
+| Description | yes | Up to 300 characters |
+| Paid to or received from, Method, Reference, Receipt link, Note | no | Method defaults to Cash |
+
+Nothing is written until you confirm. The upload is first checked row by row against the same
+rules the entry dialog enforces — a real date, not in the future, a positive amount, a budget
+line that matches the direction, and a month that is still open — and the result is shown as a
+table before anything is saved. **A sheet with any bad row imports nothing**: a half-imported
+cashbook is harder to unpick than a rejected file. Up to 500 rows and 2MB at a time.
+
+Imported entries land as `pending` like any other, so the auditor still approves them one by
+one, and each one gets its own audit row noting the file it came from.
+
+The reader is in `lib/xlsx.js` — an `.xlsx` is a ZIP of XML parts, and Node can already
+inflate and parse both, so it stays a dependency-free file rather than pulling in a library.
+It reads values only; formatting, formulas and charts are ignored.
+
 ## The monthly routine
 
 1. The **accountant** records entries as the money moves, with a receipt reference or a link
@@ -133,8 +184,10 @@ needs a hard limit, move the counter into MongoDB or Redis.
 
 One Next.js 16 project holding both the interface and the API, JavaScript throughout,
 Tailwind CSS v4 configured in `app/globals.css` with no `tailwind.config.js`, MongoDB
-through Mongoose, and a JWT in an httpOnly cookie. No UI component library, no charting
-library, no icon library, no date library — bars are `div`s and dates go through `Intl`.
+through Mongoose, and a JWT in an httpOnly cookie. No UI component library, no charting library,
+no icon package and no date library — bars are `div`s, icons are inline SVG and dates go
+through `Intl`. The spreadsheet reader is hand-rolled too, so the dependency list is still
+just `mongoose`, `bcryptjs` and `jose`.
 
 ```
 lib/         db, session, audit, period, http, format, enums, queries, api

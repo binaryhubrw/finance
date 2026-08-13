@@ -72,8 +72,8 @@ export default async function OverviewPage({ searchParams }) {
     <div className="space-y-7">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="label">Overview</p>
-          <h1 className="mt-1 text-[22px]">{monthLabel(year, month)}</h1>
+          <p className="eyebrow">Overview</p>
+          <h1 className="page-title mt-1">{monthLabel(year, month)}</h1>
           <p className="mt-1 text-[13px] text-ink-soft">
             {closed
               ? 'This month is closed. Nothing dated inside it can change.'
@@ -83,21 +83,21 @@ export default async function OverviewPage({ searchParams }) {
         <MonthPicker value={key} />
       </header>
 
-      <section className="card grid grid-cols-2 divide-y divide-rule nav:grid-cols-4 nav:divide-y-0">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 nav:grid-cols-4">
         <Figure label="Opening balance" value={summary.openingBalance} />
         <Figure label="Money in" value={summary.moneyIn} tone="in" />
         <Figure label="Money out" value={summary.moneyOut} tone="out" />
         <Figure
           label="Closing balance"
           value={summary.closingBalance}
-          size="xl"
+          feature
           note={`${summary.transactionCount} approved ${
             summary.transactionCount === 1 ? 'entry' : 'entries'
           }`}
         />
       </section>
 
-      <section className="card flex flex-wrap items-center justify-between gap-3 border-l-2 border-l-flag px-4 py-3">
+      <section className="card tint-flag flex flex-wrap items-center justify-between gap-3 border-flag/25 px-5 py-4">
         <div>
           <p className="label">Awaiting approval</p>
           <p className="mt-1 text-[13px] text-ink-soft">
@@ -117,7 +117,7 @@ export default async function OverviewPage({ searchParams }) {
 
       <div className="grid gap-6 nav:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
         <section className="card px-4 py-4">
-          <h2 className="text-[15px]">Six months in and out</h2>
+          <h2 className="text-[16px] font-semibold tracking-[-0.02em]">Six months in and out</h2>
           <p className="mt-1 text-[12px] text-ink-soft">Approved entries, month by month.</p>
           <div className="mt-3">
             <Bars rows={trendRows} emptyMessage="No approved entries in this period yet." />
@@ -125,7 +125,7 @@ export default async function OverviewPage({ searchParams }) {
         </section>
 
         <section className="card px-4 py-4">
-          <h2 className="text-[15px]">Largest expenses this month</h2>
+          <h2 className="text-[16px] font-semibold tracking-[-0.02em]">Largest expenses this month</h2>
           <p className="mt-1 text-[12px] text-ink-soft">Approved money out, largest first.</p>
 
           {biggest.length === 0 ? (

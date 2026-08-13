@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { api } from '@/lib/api';
+import { NAV_ICONS, SignOutIcon } from '@/components/Icons';
 
 const LINKS = [
   { href: '/', label: 'Overview' },
@@ -26,24 +27,26 @@ export function NavLinks({ role, pendingCount = 0 }) {
   });
 
   return (
-    <ul className="flex gap-1 overflow-x-auto nav:block nav:gap-0 nav:overflow-visible">
+    <ul className="flex gap-1.5 overflow-x-auto nav:block nav:space-y-1 nav:overflow-visible">
       {visible.map((link) => {
-        const active =
-          link.href === '/' ? pathname === '/' : pathname.startsWith(link.href);
+        const active = link.href === '/' ? pathname === '/' : pathname.startsWith(link.href);
+        const Icon = NAV_ICONS[link.href];
+
         return (
           <li key={link.href}>
             <Link
               href={link.href}
               aria-current={active ? 'page' : undefined}
-              className={`flex items-center justify-between gap-2 whitespace-nowrap border-l-2 px-3 py-2 text-[13px] transition-colors duration-120 nav:px-4 ${
+              className={`flex items-center gap-2.5 whitespace-nowrap rounded-md px-3 py-2.5 text-[13px] font-medium transition-colors duration-140 ${
                 active
-                  ? 'border-l-paper bg-white/8 text-paper'
-                  : 'border-l-transparent text-paper/65 hover:bg-white/5 hover:text-paper'
+                  ? 'bg-white/14 text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.14)]'
+                  : 'text-white/70 hover:bg-white/8 hover:text-white'
               }`}
             >
-              {link.label}
+              <Icon size={17} className={active ? 'text-[#37d0c4]' : 'text-white/55'} />
+              <span className="flex-1">{link.label}</span>
               {link.badge && pendingCount > 0 ? (
-                <span className="num rounded-sm border border-white/25 px-1.5 text-[10px] text-paper">
+                <span className="num rounded-full bg-[#37d0c4] px-2 text-[10px] font-semibold text-[#04302c]">
                   {pendingCount}
                 </span>
               ) : null}
@@ -55,7 +58,7 @@ export function NavLinks({ role, pendingCount = 0 }) {
   );
 }
 
-export function SignOutButton() {
+export function SignOutButton({ compact = false }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
 
@@ -74,8 +77,11 @@ export function SignOutButton() {
       type="button"
       onClick={signOut}
       disabled={busy}
-      className="text-[12px] text-paper/60 underline underline-offset-2 transition-colors duration-120 hover:text-paper"
+      className={`inline-flex items-center gap-1.5 rounded-md text-[12px] font-medium text-white/65 transition-colors duration-140 hover:text-white ${
+        compact ? '' : 'px-2 py-1 hover:bg-white/10'
+      }`}
     >
+      <SignOutIcon size={14} />
       {busy ? 'Signing out' : 'Sign out'}
     </button>
   );

@@ -130,6 +130,9 @@ async function seedDemo(admin) {
   const workingHour = () => (8 + Math.floor(random() * 9)) * 3_600_000 + Math.floor(random() * 60) * 60_000;
 
   const push = (entry) => {
+    // The app refuses future dates, so the demo book must not contain any either.
+    if (entry.date.getTime() > Date.now()) return;
+
     const recordedAt = new Date(entry.date.getTime() + DAY + workingHour());
     const reviewedAt = new Date(entry.date.getTime() + 2 * DAY + workingHour());
     entries.push({

@@ -7,6 +7,8 @@ import { METHOD_LABELS, STATUS_LABELS } from '@/lib/enums';
 import { downloadCsv, formatDate, money } from '@/lib/format';
 import Money from '@/components/Money';
 import EntryDialog from '@/components/EntryDialog';
+import { DownloadIcon, PlusIcon, UploadIcon } from '@/components/Icons';
+import ImportDialog from '@/components/ImportDialog';
 
 const CSV_HEADERS = [
   'Date',
@@ -24,6 +26,7 @@ const CSV_HEADERS = [
 export default function LedgerTable({ data, categories, query, user }) {
   const [editing, setEditing] = useState(null);
   const [recording, setRecording] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   const canRecord = user.role === 'accountant' || user.role === 'admin';
   const canEdit = (entry) => {
@@ -64,12 +67,20 @@ export default function LedgerTable({ data, categories, query, user }) {
         </p>
         <div className="flex gap-2">
           <button type="button" className="btn" onClick={exportCsv} disabled={!data.items.length}>
+            <DownloadIcon size={15} />
             Export CSV
           </button>
           {canRecord ? (
-            <button type="button" className="btn btn-primary" onClick={() => setRecording(true)}>
-              Record entry
-            </button>
+            <>
+              <button type="button" className="btn" onClick={() => setImporting(true)}>
+                <UploadIcon size={15} />
+                Import a sheet
+              </button>
+              <button type="button" className="btn btn-primary" onClick={() => setRecording(true)}>
+                <PlusIcon size={15} />
+                Record entry
+              </button>
+            </>
           ) : null}
         </div>
       </div>
@@ -231,6 +242,11 @@ export default function LedgerTable({ data, categories, query, user }) {
       <EntryDialog
         open={recording}
         onClose={() => setRecording(false)}
+        categories={categories}
+      />
+      <ImportDialog
+        open={importing}
+        onClose={() => setImporting(false)}
         categories={categories}
       />
       <EntryDialog

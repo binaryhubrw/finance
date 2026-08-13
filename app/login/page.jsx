@@ -4,6 +4,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import Field from '@/components/Field';
+import { BrandMark } from '@/components/Icons';
+
+const PROMISES = [
+  'Every franc in and out, with the receipt behind it',
+  'Approved before it counts towards the balance',
+  'An audit trail nothing can be deleted from',
+];
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,45 +39,62 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen nav:grid nav:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-      <section className="flex flex-col justify-between bg-ink px-6 py-10 text-paper nav:px-12 nav:py-14">
-        <div>
-          <p className="text-[15px] font-semibold tracking-[-0.02em]">Hub Ledger</p>
-          <p className="label label-quiet mt-1 text-paper/50">Kigali innovation hub</p>
+    <div className="min-h-screen bg-paper nav:grid nav:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
+      <section className="brand-panel flex flex-col justify-between px-6 py-10 nav:px-14 nav:py-14">
+        <div className="flex items-center gap-3">
+          <BrandMark size={38} />
+          <span>
+            <span className="block text-[16px] font-bold leading-tight tracking-[-0.02em] text-white">
+              UR Binary Hub
+            </span>
+            <span className="block text-[11px] text-white/60">University of Rwanda · Kigali</span>
+          </span>
         </div>
 
-        <div className="mt-12 max-w-sm nav:mt-0">
-          <h1 className="text-[22px] leading-[1.25] text-paper">
-            Every franc in and out, and the person who approved it.
-          </h1>
-          <p className="mt-3 text-[13px] leading-relaxed text-paper/65">
-            The accountant records the day. The auditor approves it. Nothing counts towards the
-            balance until it has been reviewed, and nothing is ever deleted.
+        <div className="mt-14 max-w-md nav:mt-0">
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#37d0c4]">
+            Finance
           </p>
+          <h1 className="mt-3 text-[30px] font-bold leading-[1.15] tracking-[-0.03em] text-white nav:text-[36px]">
+            The hub&rsquo;s money, accounted for.
+          </h1>
+          <p className="mt-4 text-[14px] leading-relaxed text-white/70">
+            The accountant records the day. The auditor approves it. Nothing counts towards the
+            balance until it has been reviewed.
+          </p>
+
+          <ul className="mt-8 space-y-3">
+            {PROMISES.map((promise) => (
+              <li key={promise} className="flex items-start gap-3 text-[13px] text-white/80">
+                <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#37d0c4]" />
+                {promise}
+              </li>
+            ))}
+          </ul>
         </div>
 
-        <p className="label label-quiet mt-12 text-paper/40 nav:mt-0">
+        <p className="mt-14 text-[11px] text-white/45 nav:mt-0">
           Records kept in {process.env.CURRENCY || 'RWF'}
         </p>
       </section>
 
-      <section className="flex items-center px-6 py-12 nav:px-12">
+      <section className="flex items-center px-6 py-12 nav:px-14">
         <form onSubmit={onSubmit} className="w-full max-w-sm" noValidate>
-          <h2 className="text-[18px]">Sign in</h2>
-          <p className="mt-1 text-[13px] text-ink-soft">
+          <h2 className="text-[24px] font-bold tracking-[-0.025em]">Sign in</h2>
+          <p className="mt-1.5 text-[13px] text-ink-soft">
             Use the account your administrator set up for you.
           </p>
 
           {error ? (
             <p
               role="alert"
-              className="mt-5 rounded-sm border border-debit/40 bg-debit/5 px-3 py-2 text-[13px] text-debit"
+              className="mt-6 rounded-md border border-debit/30 bg-debit/5 px-3.5 py-2.5 text-[13px] text-debit"
             >
               {error}
             </p>
           ) : null}
 
-          <div className="mt-5 space-y-4">
+          <div className="mt-6 space-y-4">
             <Field
               label="Email"
               type="email"
@@ -93,11 +117,11 @@ export default function LoginPage() {
             />
           </div>
 
-          <button type="submit" className="btn btn-primary mt-6 w-full" disabled={busy}>
+          <button type="submit" className="btn btn-primary mt-7 w-full py-3" disabled={busy}>
             {busy ? 'Signing in' : 'Sign in'}
           </button>
 
-          <p className="mt-6 text-[12px] text-ink-soft">
+          <p className="mt-7 text-[12px] text-ink-soft">
             Forgotten your password? An administrator can reset it from Settings.
           </p>
         </form>

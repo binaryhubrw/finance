@@ -45,7 +45,7 @@ export default function Modal({ open, onClose, title, description, children, wid
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/40 p-4 sm:p-8"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/45 p-4 backdrop-blur-[2px] sm:p-8"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -56,11 +56,11 @@ export default function Modal({ open, onClose, title, description, children, wid
         aria-modal="true"
         aria-labelledby={titleId}
         style={{ maxWidth: width }}
-        className="w-full rounded-md border border-rule-strong bg-surface shadow-[0_18px_40px_-20px_rgba(18,23,28,0.45)]"
+        className="w-full rounded-xl border border-rule bg-surface shadow-lift"
       >
-        <div className="flex items-start justify-between gap-4 border-b border-rule px-5 py-4">
+        <div className="flex items-start justify-between gap-4 border-b border-rule px-6 py-5">
           <div>
-            <h2 id={titleId} className="text-[16px]">
+            <h2 id={titleId} className="text-[17px] font-semibold tracking-[-0.02em]">
               {title}
             </h2>
             {description ? <p className="mt-1 text-[13px] text-ink-soft">{description}</p> : null}
@@ -69,7 +69,7 @@ export default function Modal({ open, onClose, title, description, children, wid
             Close
           </button>
         </div>
-        <div className="px-5 py-4">{children}</div>
+        <div className="px-6 py-5">{children}</div>
       </div>
     </div>
   );

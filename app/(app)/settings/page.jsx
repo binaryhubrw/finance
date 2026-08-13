@@ -68,8 +68,8 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-5">
       <header>
-        <p className="label">Settings</p>
-        <h1 className="mt-1 text-[22px]">How the book is set up</h1>
+        <p className="eyebrow">Settings</p>
+        <h1 className="page-title mt-1">How the book is set up</h1>
         <div className="mt-1 space-y-1">
           <p className="text-[13px] text-ink-soft">
             {isAdmin

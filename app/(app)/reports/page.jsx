@@ -27,8 +27,8 @@ export default async function ReportsPage({ searchParams }) {
   return (
     <div className="space-y-5">
       <header>
-        <p className="label">Reports</p>
-        <h1 className="mt-1 text-[22px]">
+        <p className="eyebrow">Reports</p>
+        <h1 className="page-title mt-1">
           {formatDate(range.from)} to {formatDate(range.to)}
         </h1>
         <p className="mt-1 text-[13px] text-ink-soft">

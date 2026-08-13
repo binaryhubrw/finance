@@ -3,7 +3,9 @@ import './globals.css';
 
 const instrument = Instrument_Sans({
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
+  // 700 is loaded because the headings ask for it — without it the browser
+  // synthesises a fake bold from 600.
+  weight: ['400', '500', '600', '700'],
   variable: '--font-instrument',
   display: 'swap',
 });
@@ -16,8 +18,8 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata = {
-  title: 'Hub Ledger',
-  description: 'Cash in, cash out, and who approved it.',
+  title: 'UR Binary Hub · Finance',
+  description: 'The hub’s money, accounted for — cash in, cash out, and who approved it.',
 };
 
 export default function RootLayout({ children }) {

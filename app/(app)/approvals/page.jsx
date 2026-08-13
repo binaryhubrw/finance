@@ -28,8 +28,8 @@ export default async function ApprovalsPage() {
   return (
     <div className="space-y-5">
       <header>
-        <p className="label">Approvals</p>
-        <h1 className="mt-1 text-[22px]">Waiting for review</h1>
+        <p className="eyebrow">Approvals</p>
+        <h1 className="page-title mt-1">Waiting for review</h1>
         <p className="mt-1 text-[13px] text-ink-soft">
           {pending.length === 0
             ? 'Nothing waiting. The accountant is up to date.'
@@ -40,8 +40,8 @@ export default async function ApprovalsPage() {
       </header>
 
       {pending.length === 0 ? (
-        <section className="card px-5 py-10 text-center">
-          <p className="text-[15px]">Nothing waiting. The accountant is up to date.</p>
+        <section className="card px-5 py-14 text-center">
+          <p className="text-[16px] font-semibold tracking-[-0.02em]">Nothing waiting. The accountant is up to date.</p>
           <p className="mt-2 text-[13px] text-ink-soft">
             New entries appear here the moment they are recorded.
           </p>
@@ -56,12 +56,12 @@ export default async function ApprovalsPage() {
             return (
               <li
                 key={String(entry._id)}
-                className="card border-l-2 border-l-flag px-4 py-4"
+                className="card border-l-[3px] border-l-flag px-5 py-5"
               >
                 <div className="flex flex-col gap-4 nav:flex-row nav:items-start nav:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                      <h2 className="text-[15px]">{entry.description}</h2>
+                      <h2 className="text-[16px] font-semibold tracking-[-0.02em]">{entry.description}</h2>
                       <Money
                         value={entry.amount}
                         tone={entry.type === 'in' ? 'in' : 'out'}

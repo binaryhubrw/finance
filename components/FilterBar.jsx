@@ -157,7 +157,7 @@ export default function FilterBar({ basePath = '/ledger', values, categories, pe
               id="filter-search"
               type="search"
               className="field"
-              placeholder="Description or reference"
+              placeholder="Search entries"
               value={form.search}
               onChange={(event) => setForm({ ...form, search: event.target.value })}
             />

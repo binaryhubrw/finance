@@ -18,8 +18,8 @@ export default async function AuditPage({ searchParams }) {
   if (user.role === 'accountant') {
     return (
       <div className="card px-5 py-8">
-        <p className="label">Audit trail</p>
-        <h1 className="mt-1 text-[22px]">This section is for the auditor</h1>
+        <p className="eyebrow">Audit trail</p>
+        <h1 className="page-title mt-1">This section is for the auditor</h1>
         <p className="mt-2 text-[13px] text-ink-soft">
           The trail records what you enter, so it is read by the people who review your work. Your
           own entries and their history are on the ledger.
@@ -67,8 +67,8 @@ export default async function AuditPage({ searchParams }) {
   return (
     <div className="space-y-5">
       <header>
-        <p className="label">Audit trail</p>
-        <h1 className="mt-1 text-[22px]">Everything that has happened</h1>
+        <p className="eyebrow">Audit trail</p>
+        <h1 className="page-title mt-1">Everything that has happened</h1>
         <p className="mt-1 text-[13px] text-ink-soft">
           Newest first. Nothing here can be edited or removed, by anyone.
         </p>
