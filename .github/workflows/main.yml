@@ -1,0 +1,34 @@
+name: CI/CD Docker Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-push-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      # 1. Log in to GHCR using your custom PAT
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT }}
+
+      # 2. Build the image (Added --no-cache to prevent 'unknown blob' errors)
+      - name: Build Docker image
+        run: |
+          OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          docker build --no-cache -t ghcr.io/$OWNER_LOWER/finance-hb:latest .
+
+      # 3. Push to GHCR
+      - name: Push Docker image
+        run: |
+          OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          docker push ghcr.io/$OWNER_LOWER/finance-hb:latest
