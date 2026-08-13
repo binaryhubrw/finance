@@ -1,0 +1,1425 @@
+<title>UR Binary Hub Finance — User Manual</title>
+
+<style>
+  @font-face {
+    font-family: 'Instrument Sans';
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url(data:font/woff2;base64,__SANS__) format('woff2');
+  }
+  @font-face {
+    font-family: 'IBM Plex Mono';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(data:font/woff2;base64,__MONO400__) format('woff2');
+  }
+  @font-face {
+    font-family: 'IBM Plex Mono';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(data:font/woff2;base64,__MONO500__) format('woff2');
+  }
+
+  /* Light palette — the product's own tokens, so the manual and the screens it
+     describes read as one thing. */
+  :root {
+    --paper: #f4f7fb;
+    --surface: #ffffff;
+    --sunk: #eef2f9;
+    --ink: #0f1a2b;
+    --ink-soft: #44536b;
+    --muted: #5b6b82;
+    --rule: #e4eaf3;
+    --rule-strong: #cbd6e6;
+    --accent: #123c7a;
+    --accent-deep: #0b2a58;
+    --accent-soft: #e9eff9;
+    --accent-text: #123c7a;
+    --teal: #0e8f86;
+    --teal-deep: #0a6e67;
+    --teal-soft: #e3f4f2;
+    --credit: #0f7a54;
+    --credit-soft: #e4f3ec;
+    --debit: #c0392b;
+    --debit-soft: #fbeae8;
+    --flag: #a35a07;
+    --flag-soft: #fdf2e3;
+    --rail: #0e8f86;
+    --shadow: 0 1px 2px rgba(15, 26, 43, 0.04), 0 10px 28px -18px rgba(15, 26, 43, 0.22);
+
+    --sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --paper: #0c1421;
+      --surface: #131e30;
+      --sunk: #18253a;
+      --ink: #e8eef8;
+      --ink-soft: #b3c1d6;
+      --muted: #8fa0ba;
+      --rule: #24334c;
+      --rule-strong: #35486a;
+      --accent: #4d86d8;
+      --accent-deep: #7aa8e8;
+      --accent-soft: #16273f;
+      --accent-text: #8fb5ee;
+      --teal: #35b3a7;
+      --teal-deep: #4fc9bc;
+      --teal-soft: #102b2c;
+      --credit: #3fbb85;
+      --credit-soft: #102a20;
+      --debit: #e8776a;
+      --debit-soft: #2d1715;
+      --flag: #d69a4a;
+      --flag-soft: #2a1f0f;
+      --rail: #35b3a7;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 28px -18px rgba(0, 0, 0, 0.7);
+    }
+  }
+
+  :root[data-theme='dark'] {
+    --paper: #0c1421;
+    --surface: #131e30;
+    --sunk: #18253a;
+    --ink: #e8eef8;
+    --ink-soft: #b3c1d6;
+    --muted: #8fa0ba;
+    --rule: #24334c;
+    --rule-strong: #35486a;
+    --accent: #4d86d8;
+    --accent-deep: #7aa8e8;
+    --accent-soft: #16273f;
+    --accent-text: #8fb5ee;
+    --teal: #35b3a7;
+    --teal-deep: #4fc9bc;
+    --teal-soft: #102b2c;
+    --credit: #3fbb85;
+    --credit-soft: #102a20;
+    --debit: #e8776a;
+    --debit-soft: #2d1715;
+    --flag: #d69a4a;
+    --flag-soft: #2a1f0f;
+    --rail: #35b3a7;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 28px -18px rgba(0, 0, 0, 0.7);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink-soft);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--accent-text); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:hover { color: var(--teal-deep); }
+
+  :focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+
+  /* ---------------------------------------------------------------- shell */
+
+  .page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 24px 96px;
+    display: grid;
+    grid-template-columns: 218px minmax(0, 1fr);
+    gap: 56px;
+    align-items: start;
+  }
+
+  /* ----------------------------------------------------------- masthead */
+
+  .masthead {
+    grid-column: 1 / -1;
+    border-bottom: 1px solid var(--rule-strong);
+    padding: 56px 0 34px;
+    margin-bottom: 10px;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--teal-deep);
+  }
+
+  .masthead h1 {
+    font-size: clamp(30px, 4.6vw, 46px);
+    line-height: 1.06;
+    letter-spacing: -0.03em;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 14px 0 0;
+    text-wrap: balance;
+  }
+
+  .standfirst {
+    max-width: 60ch;
+    margin: 16px 0 0;
+    font-size: 17px;
+    line-height: 1.6;
+  }
+
+  .masthead-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    margin-top: 24px;
+  }
+
+  .companion {
+    margin: 20px 0 0;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--rail);
+    border-radius: 0 8px 8px 0;
+    font-size: 13.5px;
+    max-width: 60ch;
+  }
+  .companion strong { display: block; }
+
+  /* -------------------------------------------------------------- nav */
+
+  .toc {
+    position: sticky;
+    top: 28px;
+    align-self: start;
+  }
+
+  .toc-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 6px;
+  }
+
+  .toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    counter-reset: toc;
+  }
+
+  .toc a {
+    display: flex;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.35;
+    color: var(--ink-soft);
+    text-decoration: none;
+    counter-increment: toc;
+  }
+
+  .toc a::before {
+    content: counter(toc);
+    font-family: var(--mono);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+    padding-top: 1px;
+  }
+
+  .toc a:hover { background: var(--accent-soft); color: var(--ink); }
+  .toc a:hover::before { color: var(--teal-deep); }
+
+  .toc-mobile { display: none; }
+
+  /* --------------------------------------------------------- content */
+
+  .content { min-width: 0; }
+
+  section { padding-top: 46px; scroll-margin-top: 20px; }
+
+  h2 {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    font-size: 25px;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0 0 20px;
+    text-wrap: balance;
+  }
+
+  h2 .n {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--teal-deep);
+    letter-spacing: 0.06em;
+    flex: none;
+  }
+
+  h3 {
+    font-size: 17px;
+    letter-spacing: -0.015em;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 34px 0 10px;
+    text-wrap: balance;
+  }
+
+  h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 22px 0 6px;
+  }
+
+  p { margin: 0 0 14px; max-width: 68ch; }
+  strong { color: var(--ink); font-weight: 600; }
+
+  ul, ol { max-width: 68ch; padding-left: 20px; margin: 0 0 14px; }
+  li { margin-bottom: 6px; }
+  li::marker { color: var(--muted); }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    background: var(--sunk);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1px 5px;
+    color: var(--ink);
+  }
+
+  /* ---------------------------------------------------------- devices */
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+  }
+
+  /* A rule down the left edge, the way the ledger marks a row that needs
+     attention. Colour carries the meaning, never decoration. */
+  .note {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--rail);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    margin: 0 0 18px;
+    max-width: 68ch;
+  }
+  .note > :last-child { margin-bottom: 0; }
+  .note-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--teal-deep);
+    margin: 0 0 6px;
+  }
+
+  .quote {
+    border-left: 3px solid var(--rule-strong);
+    padding: 2px 0 2px 16px;
+    margin: 0 0 16px;
+    max-width: 62ch;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+
+  /* The five rules. Numbered because they are referred to by number. */
+  .rules { counter-reset: rule; display: flex; flex-direction: column; gap: 2px; }
+
+  .rule-item {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 16px;
+    padding: 18px 0;
+    border-top: 1px solid var(--rule);
+    counter-increment: rule;
+  }
+  .rule-item:last-child { border-bottom: 1px solid var(--rule); }
+
+  .rule-item::before {
+    content: counter(rule);
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    color: var(--rule-strong);
+    padding-top: 3px;
+  }
+
+  .rule-item h3 { margin: 0 0 6px; font-size: 16px; }
+  .rule-item p:last-child { margin-bottom: 0; }
+
+  /* ---------------------------------------------------------- chips */
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--rule-strong);
+    background: var(--sunk);
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+
+  .chip-pending { background: var(--flag-soft); border-color: var(--flag); color: var(--flag); }
+  .chip-approved { background: var(--credit-soft); border-color: var(--credit); color: var(--credit); }
+  .chip-rejected { background: var(--debit-soft); border-color: var(--debit); color: var(--debit); }
+  .chip-void { background: var(--sunk); border-color: var(--rule-strong); color: var(--muted); }
+  .chip-role { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-text); }
+
+  .who {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0 0 12px;
+  }
+
+  /* ---------------------------------------------------------- tables */
+
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    background: var(--surface);
+    margin: 0 0 20px;
+    box-shadow: var(--shadow);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    min-width: 520px;
+  }
+
+  thead th {
+    background: var(--sunk);
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--rule-strong);
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody th {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--rule);
+    text-align: left;
+    font-weight: 600;
+    color: var(--ink);
+    vertical-align: top;
+    white-space: nowrap;
+  }
+  tbody tr:last-child th { border-bottom: 0; }
+
+  .msg { font-family: var(--mono); font-size: 12px; color: var(--ink); white-space: normal; }
+
+  /* --------------------------------------------------------- diagram */
+
+  .diagram {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 22px 18px 14px;
+    margin: 0 0 20px;
+    overflow-x: auto;
+    box-shadow: var(--shadow);
+  }
+  .diagram svg { display: block; min-width: 560px; width: 100%; height: auto; }
+  .diagram figcaption {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 10px 20px; margin: 0 0 20px; padding: 0; list-style: none; max-width: 68ch; }
+  .legend li { display: flex; align-items: baseline; gap: 9px; margin: 0; font-size: 13.5px; }
+
+  /* -------------------------------------------------------- routine */
+
+  .routine { display: flex; flex-direction: column; gap: 0; max-width: 68ch; }
+
+  .beat {
+    display: grid;
+    grid-template-columns: 132px minmax(0, 1fr);
+    gap: 20px;
+    padding: 18px 0;
+    border-top: 1px solid var(--rule);
+  }
+  .beat:last-child { border-bottom: 1px solid var(--rule); }
+
+  .beat-when {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--teal-deep);
+    padding-top: 3px;
+  }
+  .beat p:last-child, .beat ol:last-child, .beat ul:last-child { margin-bottom: 0; }
+
+  /* ------------------------------------------------------------- faq */
+
+  .faq { border-top: 1px solid var(--rule); max-width: 68ch; }
+
+  .faq details {
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .faq summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 14px 28px 14px 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    position: relative;
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+
+  .faq summary::after {
+    content: '+';
+    position: absolute;
+    right: 4px;
+    top: 12px;
+    font-family: var(--mono);
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .faq details[open] summary::after { content: '−'; }
+  .faq summary:hover { color: var(--accent-text); }
+
+  .faq-body { padding: 0 0 16px; }
+  .faq-body > :last-child { margin-bottom: 0; }
+
+  /* ---------------------------------------------------------- footer */
+
+  footer {
+    grid-column: 1 / -1;
+    margin-top: 64px;
+    padding-top: 22px;
+    border-top: 1px solid var(--rule-strong);
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    justify-content: space-between;
+  }
+
+  /* -------------------------------------------------------- responsive */
+
+  @media (max-width: 900px) {
+    .page { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 0 20px 72px; }
+    .toc { display: none; }
+    .toc-mobile { display: block; margin-top: 26px; }
+    .toc-mobile summary {
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent-text);
+      padding: 10px 0;
+    }
+    .toc-mobile .toc-title { display: none; }
+    .toc-mobile ol { padding-bottom: 12px; }
+    .beat { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+    .masthead { padding-top: 40px; }
+  }
+
+  @media (max-width: 420px) {
+    .page { padding: 0 15px 60px; }
+    .rule-item { grid-template-columns: 26px minmax(0, 1fr); gap: 12px; }
+    .rule-item::before { font-size: 18px; }
+  }
+
+  @media print {
+    .toc, .toc-mobile { display: none; }
+    .page { display: block; max-width: none; }
+    .faq details { }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="page">
+  <header class="masthead">
+    <p class="eyebrow">User manual</p>
+    <h1>UR Binary Hub Finance</h1>
+    <p class="standfirst">
+      How the hub's cashbook works — recording money, getting it approved, and closing a month.
+      Written for everyone who signs in, whatever their role.
+    </p>
+    <div class="masthead-meta">
+      <span class="chip chip-role">Accountant</span>
+      <span class="chip chip-role">Auditor</span>
+      <span class="chip chip-role">Administrator</span>
+      <span class="chip chip-role">Viewer</span>
+      <span class="chip">Currency&nbsp;· RWF</span>
+    </div>
+
+    <p class="companion">
+      <strong>Looking for what a particular button does?</strong>
+      That is in the
+      <a href="https://claude.ai/code/artifact/21db2567-bd9f-4342-a30f-dba4cefe1086">screen
+      reference</a>, which lists every control on every screen. This manual covers the rules
+      behind them.
+    </p>
+
+    <details class="toc-mobile">
+      <summary>Contents</summary>
+      <ol>
+        <li><a href="#purpose">What this system is for</a></li>
+        <li><a href="#roles">The four roles</a></li>
+        <li><a href="#rules">Five rules that govern everything</a></li>
+        <li><a href="#lifecycle">The life of an entry</a></li>
+        <li><a href="#start">Getting started</a></li>
+        <li><a href="#screens">Screen by screen</a></li>
+        <li><a href="#routine">The monthly routine</a></li>
+        <li><a href="#messages">Messages you might see</a></li>
+        <li><a href="#questions">Questions people ask</a></li>
+        <li><a href="#scope">What this system does not do</a></li>
+      </ol>
+    </details>
+  </header>
+
+  <nav class="toc" aria-label="Contents">
+    <p class="toc-title">Contents</p>
+    <ol>
+      <li><a href="#purpose">What this system is for</a></li>
+      <li><a href="#roles">The four roles</a></li>
+      <li><a href="#rules">Five rules that govern everything</a></li>
+      <li><a href="#lifecycle">The life of an entry</a></li>
+      <li><a href="#start">Getting started</a></li>
+      <li><a href="#screens">Screen by screen</a></li>
+      <li><a href="#routine">The monthly routine</a></li>
+      <li><a href="#messages">Messages you might see</a></li>
+      <li><a href="#questions">Questions people ask</a></li>
+      <li><a href="#scope">What this system does not do</a></li>
+    </ol>
+  </nav>
+
+  <main class="content">
+
+    <!-- ============================================================ 1 -->
+    <section id="purpose">
+      <h2><span class="n">01</span> What this system is for</h2>
+
+      <p>
+        The hub takes money in and pays money out. This system records every franc of it, so that
+        at any moment two questions have a clear answer:
+      </p>
+
+      <div class="note">
+        <p class="note-title">The two questions</p>
+        <p><strong>How much money does the hub have?</strong></p>
+        <p style="margin-bottom:0"><strong>Who decided each entry was correct?</strong></p>
+      </div>
+
+      <p>
+        It works the way a paper cashbook works, with one rule added: <strong>two different people
+        are involved in every entry.</strong> One person records what happened. A different person
+        checks it and approves it. Until that second person approves, the entry sits in the book
+        but does not count towards the balance.
+      </p>
+
+      <p>
+        That is the whole idea. Everything else in this manual follows from it. Amounts are in
+        Rwandan francs.
+      </p>
+    </section>
+
+    <!-- ============================================================ 2 -->
+    <section id="roles">
+      <h2><span class="n">02</span> The four roles</h2>
+
+      <p>Your role decides what you can do. An administrator sets it when your account is created.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Role</th>
+              <th scope="col">What it is for</th>
+              <th scope="col">Can do</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Accountant</th>
+              <td>The person who handles the money day to day</td>
+              <td>Records entries. Edits or cancels <strong>their own</strong> entries, but only while still pending. Views the ledger and reports. Exports CSV.</td>
+            </tr>
+            <tr>
+              <th scope="row">Auditor</th>
+              <td>The person who checks the accountant's work</td>
+              <td>Approves, rejects and voids entries. Reads the audit trail and exceptions. Closes months. Exports. <strong>Cannot record or edit entries.</strong></td>
+            </tr>
+            <tr>
+              <th scope="row">Administrator</th>
+              <td>The person who runs the system</td>
+              <td>Everything an auditor can do, plus manages people and budget lines.</td>
+            </tr>
+            <tr>
+              <th scope="row">Viewer</th>
+              <td>Anyone who needs to see the numbers</td>
+              <td>Reads the ledger and reports. Changes nothing.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Why an auditor cannot record entries</h3>
+
+      <p>
+        This looks like a missing feature and is not. If the same person could both write an entry
+        and approve it, the check would be worthless. The system enforces the split on the server,
+        not by hiding buttons — the answer is the same whoever asks and however they ask.
+      </p>
+
+      <p>
+        For the same reason, <strong>nobody can approve an entry they recorded themselves</strong>,
+        including an administrator. If you try:
+      </p>
+
+      <blockquote class="quote">
+        You recorded this entry, so someone else has to approve it. Ask another auditor to review it.
+      </blockquote>
+    </section>
+
+    <!-- ============================================================ 3 -->
+    <section id="rules">
+      <h2><span class="n">03</span> Five rules that govern everything</h2>
+
+      <p>Learn these and the rest of the system explains itself.</p>
+
+      <div class="rules">
+        <div class="rule-item">
+          <div>
+            <h3>Approval gates the balance</h3>
+            <p>
+              A new entry is <strong>pending</strong>. It appears in the ledger and you can see it,
+              but it does not move the running balance and does not appear in reports. Only after an
+              auditor approves it does it count. This is why the balance column shows a small dash,
+              not a number, next to a pending row.
+            </p>
+          </div>
+        </div>
+
+        <div class="rule-item">
+          <div>
+            <h3>Nothing is ever deleted</h3>
+            <p>
+              There is no delete button anywhere, and no hidden one either. An entry that was a
+              mistake gets <strong>voided</strong> — it stays visible, dimmed, struck through, with
+              the reason shown beside it. The record of the mistake is part of the record.
+            </p>
+          </div>
+        </div>
+
+        <div class="rule-item">
+          <div>
+            <h3>Editing after review undoes the review</h3>
+            <p>
+              If an approved or rejected entry is edited, the earlier decision no longer applies to
+              what the entry now says. So it goes <strong>back to pending</strong>, the reviewer is
+              cleared, and it is flagged as edited. It reappears in the approvals queue marked
+              "re-submitted after edit", and the auditor is told exactly what changed.
+            </p>
+          </div>
+        </div>
+
+        <div class="rule-item">
+          <div>
+            <h3>Closed months are frozen</h3>
+            <p>
+              At the end of a month an auditor closes it. After that, nothing dated inside that
+              month can be created, edited, voided or approved. A month cannot be closed while any
+              entry inside it is still waiting for approval.
+            </p>
+            <blockquote class="quote" style="margin-top:12px;margin-bottom:0">
+              March 2026 is closed. Record the correction in an open month instead.
+            </blockquote>
+          </div>
+        </div>
+
+        <div class="rule-item">
+          <div>
+            <h3>Every action is written down</h3>
+            <p>
+              Recording, editing, approving, rejecting, voiding, closing a month, adding a person,
+              even signing in — all of it goes to the audit trail with who did it, when, and exactly
+              which fields changed. The trail is append-only. Nobody can edit or delete it,
+              including administrators.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ 4 -->
+    <section id="lifecycle">
+      <h2><span class="n">04</span> The life of an entry</h2>
+
+      <figure class="diagram">
+        <svg viewBox="0 0 720 300" role="img" aria-labelledby="lifecycle-title lifecycle-desc">
+          <title id="lifecycle-title">How an entry moves between statuses</title>
+          <desc id="lifecycle-desc">
+            An accountant records an entry, which becomes pending. An auditor either approves it,
+            making it count towards the balance, or rejects it with a reason. Editing a reviewed
+            entry sends it back to pending. Any entry can be voided by an auditor, with a reason.
+          </desc>
+
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--rule-strong)" />
+            </marker>
+            <marker id="arrow-flag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--flag)" />
+            </marker>
+          </defs>
+
+          <!-- recorded -->
+          <text x="8" y="96" font-family="var(--mono)" font-size="10.5" letter-spacing="1.1" fill="var(--muted)">ACCOUNTANT</text>
+          <text x="8" y="112" font-family="var(--mono)" font-size="10.5" letter-spacing="1.1" fill="var(--muted)">RECORDS</text>
+
+          <line x1="98" y1="104" x2="150" y2="104" stroke="var(--rule-strong)" stroke-width="1.5" marker-end="url(#arrow)" />
+
+          <!-- pending -->
+          <rect x="158" y="66" width="176" height="76" rx="8" fill="var(--flag-soft)" stroke="var(--flag)" stroke-width="1.5" />
+          <rect x="158" y="66" width="3.5" height="76" fill="var(--flag)" />
+          <text x="176" y="93" font-family="var(--mono)" font-size="12" font-weight="500" letter-spacing="1.2" fill="var(--flag)">PENDING</text>
+          <text x="176" y="112" font-size="11.5" fill="var(--ink-soft)">In the book, but the</text>
+          <text x="176" y="127" font-size="11.5" fill="var(--ink-soft)">balance ignores it</text>
+
+          <!-- to approved -->
+          <path d="M 334 92 L 396 92 L 396 52 L 470 52" fill="none" stroke="var(--rule-strong)" stroke-width="1.5" marker-end="url(#arrow)" />
+          <text x="470" y="40" text-anchor="end" font-size="11" fill="var(--muted)">auditor approves</text>
+
+          <rect x="478" y="24" width="196" height="58" rx="8" fill="var(--credit-soft)" stroke="var(--credit)" stroke-width="1.5" />
+          <rect x="478" y="24" width="3.5" height="58" fill="var(--credit)" />
+          <text x="496" y="48" font-family="var(--mono)" font-size="12" font-weight="500" letter-spacing="1.2" fill="var(--credit)">APPROVED</text>
+          <text x="496" y="66" font-size="11.5" fill="var(--ink-soft)">Counts towards the balance</text>
+
+          <!-- to rejected -->
+          <path d="M 334 118 L 396 118 L 396 158 L 470 158" fill="none" stroke="var(--rule-strong)" stroke-width="1.5" marker-end="url(#arrow)" />
+          <text x="470" y="177" text-anchor="end" font-size="11" fill="var(--muted)">auditor rejects, with a reason</text>
+
+          <rect x="478" y="130" width="196" height="58" rx="8" fill="var(--debit-soft)" stroke="var(--debit)" stroke-width="1.5" />
+          <rect x="478" y="130" width="3.5" height="58" fill="var(--debit)" />
+          <text x="496" y="154" font-family="var(--mono)" font-size="12" font-weight="500" letter-spacing="1.2" fill="var(--debit)">REJECTED</text>
+          <text x="496" y="172" font-size="11.5" fill="var(--ink-soft)">Does not count. Stays visible</text>
+
+          <!-- edit returns to pending -->
+          <path d="M 576 196 L 576 226 L 246 226 L 246 146" fill="none" stroke="var(--flag)" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrow-flag)" />
+          <text x="286" y="245" font-size="11" fill="var(--flag)">an edit sends a reviewed entry back to pending, flagged</text>
+
+          <!-- void -->
+          <line x1="158" y1="272" x2="470" y2="272" stroke="var(--rule-strong)" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrow)" />
+          <text x="8" y="276" font-family="var(--mono)" font-size="10.5" letter-spacing="1.1" fill="var(--muted)">ANY ENTRY</text>
+          <text x="176" y="264" font-size="11" fill="var(--muted)">auditor voids it, with a reason</text>
+
+          <rect x="478" y="250" width="196" height="42" rx="8" fill="var(--sunk)" stroke="var(--rule-strong)" stroke-width="1.5" />
+          <text x="496" y="268" font-family="var(--mono)" font-size="12" font-weight="500" letter-spacing="1.2" fill="var(--muted)">VOID</text>
+          <text x="496" y="284" font-size="11.5" fill="var(--muted)">Struck through, stops counting</text>
+        </svg>
+        <figcaption>
+          Only the approved state moves the balance. Everything else is visible but inert.
+        </figcaption>
+      </figure>
+
+      <ul class="legend">
+        <li><span class="chip chip-pending">Pending</span> <span>Recorded, waiting. Does not count.</span></li>
+        <li><span class="chip chip-approved">Approved</span> <span>Checked and accepted. Counts.</span></li>
+        <li><span class="chip chip-rejected">Rejected</span> <span>Refused with a reason. Stays visible.</span></li>
+        <li><span class="chip chip-void">Void</span> <span>Cancelled with a reason. Struck through.</span></li>
+      </ul>
+    </section>
+
+    <!-- ============================================================ 5 -->
+    <section id="start">
+      <h2><span class="n">05</span> Getting started</h2>
+
+      <h3>Signing in</h3>
+      <p>
+        Go to the address your administrator gave you and enter your email and password. After ten
+        failed attempts the system pauses sign-in for that account for fifteen minutes.
+      </p>
+
+      <h3>Change your password on the first day</h3>
+      <p>
+        Your first password was typed by whoever created your account, so they know it. Open
+        <strong>Settings → Your account</strong> and change it. You will need your current password
+        and a new one of at least 8 characters.
+      </p>
+      <p>
+        If you have forgotten your password, an administrator can set a new one from
+        <strong>Settings → People → Reset password</strong>. There is no email reset.
+      </p>
+
+      <h3>Finding your way</h3>
+      <p>
+        The sidebar down the left is the whole application. On a phone it becomes a row of links
+        across the top. You only see the screens your role can use.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Screen</th>
+              <th scope="col">What it holds</th>
+              <th scope="col">Who sees it</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Overview</th><td>The month at a glance</td><td>Everyone</td></tr>
+            <tr><th scope="row">Ledger</th><td>The cashbook itself — every entry</td><td>Everyone</td></tr>
+            <tr><th scope="row">Approvals</th><td>Entries waiting for a decision, with a count badge</td><td>Everyone</td></tr>
+            <tr><th scope="row">Audit trail</th><td>Everything that has happened</td><td>Auditor, administrator, viewer</td></tr>
+            <tr><th scope="row">Exceptions</th><td>What to look at twice</td><td>Auditor, administrator, viewer</td></tr>
+            <tr><th scope="row">Reports</th><td>Totals over any date range</td><td>Everyone</td></tr>
+            <tr><th scope="row">Settings</th><td>Budget lines, people, closing months</td><td>Auditor, administrator</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================================ 6 -->
+    <section id="screens">
+      <h2><span class="n">06</span> Screen by screen</h2>
+
+      <h3>Overview</h3>
+      <p>
+        Where you land when you sign in. Pick a month at the top; it opens on the current month.
+        Four figures run across it: <strong>opening balance</strong> (what the hub held at the start
+        of the month), <strong>money in</strong> and <strong>money out</strong> for the month, and
+        <strong>closing balance</strong> — the headline number, what the hub holds now.
+      </p>
+      <p>
+        Then <strong>Awaiting approval</strong>, showing how many entries are waiting and what they
+        are worth; click it to go straight to Approvals. Below that, six months of money in and out
+        side by side, and the five largest expenses of the month. Every figure here counts approved
+        entries only.
+      </p>
+
+      <h3>Ledger</h3>
+      <p>The cashbook, and the screen you will use most.</p>
+      <p>
+        Columns run <strong>Date · Description · Method · Status · Money in · Money out ·
+        Balance</strong>, with the payee, reference and budget line under each description.
+      </p>
+
+      <h4>Reading the rows</h4>
+      <ul>
+        <li>The row above the first entry is the <strong>opening balance</strong> — what was already in the book before this range starts.</li>
+        <li><strong>Pending</strong> rows carry an amber marker down the left edge, and the balance column shows a dash. That gap is the point: the entry has not counted yet.</li>
+        <li><strong>Void</strong> rows are dimmed and struck through, with the reason shown.</li>
+        <li>The <strong>Balance</strong> column sits in its own tinted lane, separated by a rule — the ruled balance column of a physical cashbook. It only ever counts approved entries.</li>
+      </ul>
+
+      <div class="note">
+        <p class="note-title">The balance column disappears when you filter</p>
+        <p>
+          A running balance only makes sense over a continuous stretch of the book. The moment you
+          filter by budget line, status, person or search term you are looking at a selection, and a
+          running total over a selection would be misleading. Filter by date alone and the column
+          comes back.
+        </p>
+      </div>
+
+      <p>
+        <strong>Export CSV</strong> downloads exactly what you are looking at, with amounts as plain
+        numbers so a spreadsheet adds them up correctly.
+      </p>
+
+      <h3>Recording an entry</h3>
+      <div class="who">
+        <span class="chip chip-role">Accountant</span>
+        <span class="chip chip-role">Administrator</span>
+      </div>
+      <p><strong>Record entry</strong> on the Ledger opens the form.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th scope="col">Field</th><th scope="col">What to put in it</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Date</th><td>The day the money actually moved, not the day you are typing. Future dates are refused.</td></tr>
+            <tr><th scope="row">Direction</th><td>Money in or money out.</td></tr>
+            <tr><th scope="row">Amount</th><td>Digits only.</td></tr>
+            <tr><th scope="row">Budget line</th><td>The list narrows to lines matching the direction — income lines for money in, expense lines for money out.</td></tr>
+            <tr><th scope="row">Description</th><td>What it was for, in plain words. This is what the auditor reads.</td></tr>
+            <tr><th scope="row">Paid to / Received from</th><td>The other party.</td></tr>
+            <tr><th scope="row">Method</th><td>Cash, mobile money, bank or other.</td></tr>
+            <tr><th scope="row">Reference</th><td>Receipt number, MoMo transaction ID, cheque number.</td></tr>
+            <tr><th scope="row">Receipt link</th><td>A link to a photo of the receipt — a Drive or Photos link is fine. The system stores the link, not the image.</td></tr>
+            <tr><th scope="row">Note</th><td>Anything the auditor should know.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        <strong>Fill in the reference or the receipt link for every expense.</strong> An expense with
+        neither is flagged under Exceptions, because months later there is no way to verify it
+        happened. When you save, the entry is pending and the screen says so. It is now the
+        auditor's turn.
+      </p>
+
+      <p>
+        <strong>Fixing a mistake.</strong> While an entry is still pending you can edit your own
+        entries freely. Once it has been approved or rejected, editing it sends it back to pending
+        for a fresh decision. You can only touch entries you recorded yourself.
+      </p>
+
+      <h3>Importing a spreadsheet</h3>
+      <div class="who">
+        <span class="chip chip-role">Accountant</span>
+        <span class="chip chip-role">Administrator</span>
+      </div>
+      <p>
+        <strong>Import a sheet</strong> sits next to Record entry. Use it when you have a batch to
+        enter — a month of receipts, a list from the bank.
+      </p>
+
+      <ol>
+        <li><strong>Download the template.</strong> It opens in Excel with the right columns already.</li>
+        <li><strong>Fill in one row per entry.</strong> Dates as <code>dd/mm/yyyy</code>, budget lines spelled the way they appear in the system. The dialog lists every line in use, so copy from there.</li>
+        <li><strong>Upload it.</strong> <code>.xlsx</code> straight from Excel, Numbers or Google Sheets works, so does <code>.csv</code>. Up to 2MB and 500 rows at a time.</li>
+        <li><strong>Check the preview.</strong> Nothing has been saved yet. Every row is listed either as ready or with the exact problem — a budget line that does not exist, a date in the future, an amount that is not a number.</li>
+        <li><strong>Import.</strong> The button turns on only when every row is ready.</li>
+      </ol>
+
+      <div class="note">
+        <p class="note-title">A sheet with any bad row imports nothing</p>
+        <p>
+          This is on purpose. Half a batch in the book, with no easy way to tell which half, is worse
+          than a rejected file. Fix the rows it names and upload again. Imported entries are pending
+          exactly like typed ones, and each gets its own line in the audit trail naming the file it
+          came from.
+        </p>
+      </div>
+
+      <h3>Approvals</h3>
+      <div class="who">
+        <span class="chip chip-role">Auditor</span>
+        <span class="chip chip-role">Administrator</span>
+      </div>
+      <p>
+        The auditor's working screen. Oldest first, because the oldest have waited longest. Each
+        entry shows everything you need to decide without clicking anywhere: description, amount,
+        budget line, who recorded it and when, and the receipt reference. Warning lines appear when
+        something deserves attention — no receipt reference, or the entry was edited after a
+        previous review.
+      </p>
+      <ul>
+        <li><strong>Approve</strong> — the entry counts from that moment, and the balance moves by exactly that amount.</li>
+        <li><strong>Reject</strong> — you must give a reason. The entry stays visible with your reason attached, so the accountant knows what to fix.</li>
+      </ul>
+      <p>
+        When the queue is empty it says <em>"Nothing waiting. The accountant is up to date."</em>
+      </p>
+      <p>
+        <strong>Void, not reject</strong>, when an entry should never have existed at all — a
+        duplicate, a payment that was reversed. Voiding also needs a reason. The entry stays in the
+        book, struck through, and stops counting.
+      </p>
+
+      <h3>Audit trail</h3>
+      <p>
+        Everything that has happened, newest first. Each line shows the time, who did it, what they
+        did and which entry. Changes are spelled out field by field —
+        <code>amount: 40,000 → 45,000</code>. <strong>Snapshot</strong> on any row opens the full
+        record as it stood right after that action.
+      </p>
+      <p>
+        Filter by person, action or date to answer a specific question: what did this person change
+        last Tuesday, show me every void this quarter.
+      </p>
+      <p>
+        This screen is read-only for everyone. There is no way to alter the trail from anywhere in
+        the system, and no administrator setting that unlocks it.
+      </p>
+
+      <h3>Exceptions</h3>
+      <p>
+        The screen an auditor should open first. It does not find fraud — it finds the entries most
+        worth a second look, in six lists.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th scope="col">List</th><th scope="col">Why it matters</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Missing receipt</th><td>An expense with no receipt reference cannot be verified later.</td></tr>
+            <tr><th scope="row">Edited after review</th><td>These changed after someone had already reviewed them, so the earlier decision no longer applies.</td></tr>
+            <tr><th scope="row">Large amounts</th><td>Anything at or above the threshold deserves a second signature.</td></tr>
+            <tr><th scope="row">Backdated</th><td>Recorded more than seven days after the date on the entry, so the paperwork trail may be thin.</td></tr>
+            <tr><th scope="row">Possible duplicates</th><td>Entries sharing a date, an amount and a budget line are often the same payment recorded twice.</td></tr>
+            <tr><th scope="row">Waiting too long</th><td>Pending for more than seven days. The balance is understated until these are cleared.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        Every row links into the ledger so you can see the entry in context, and empty sections
+        collapse to a quiet "Nothing flagged". A flagged entry is not necessarily wrong — ask about
+        it, and if the answer is satisfactory, note it and move on.
+      </p>
+
+      <h3>Reports</h3>
+      <p>
+        Totals over any date range, with shortcuts for <strong>This month</strong>, <strong>Last
+        month</strong>, <strong>This quarter</strong> and <strong>This year</strong>. You get summary
+        figures, spending by budget line as bars with each line's share — and budget against actual
+        where a monthly budget is set — income by budget line, the split by payment method, and a
+        month-by-month table. Every table has its own CSV button.
+      </p>
+      <p>
+        Reports count approved entries only, so report totals and the ledger's closing balance for
+        the same range always agree. If they ever disagree, something is wrong; say so.
+      </p>
+
+      <h3>Settings</h3>
+      <div class="who">
+        <span class="chip chip-role">Auditor · month close only</span>
+        <span class="chip chip-role">Administrator · everything</span>
+      </div>
+
+      <h4>Budget lines</h4>
+      <p>
+        Add a line, rename it, set a monthly budget, deactivate it. A line in use cannot be deleted —
+        deactivate it instead, and it disappears from the entry form for new entries while past
+        entries keep their history intact. Renaming is safe: the audit trail keeps the old name
+        against the entries that used it.
+      </p>
+
+      <h4>People</h4>
+      <p>
+        Add someone, change their role, reset a password, deactivate an account when they leave.
+        Deactivating is the right move for a departure — the person can no longer sign in, but
+        everything they recorded stays attributed to them. You cannot demote or deactivate your own
+        account; that is what stops the last administrator locking everyone out.
+      </p>
+
+      <h4>Close a month</h4>
+      <ol>
+        <li>Pick the month.</li>
+        <li>Enter the cash you physically counted, if you counted it.</li>
+        <li>The screen shows the <strong>book balance</strong>, your <strong>counted</strong> figure and the <strong>variance</strong> between them, before you confirm.</li>
+        <li>Confirm.</li>
+      </ol>
+      <p>
+        If anything in that month is still pending, closing is refused — clear the queue first.
+        Closed months are listed underneath with a <strong>Reopen</strong> action for
+        administrators, and reopening is logged like everything else.
+      </p>
+    </section>
+
+    <!-- ============================================================ 7 -->
+    <section id="routine">
+      <h2><span class="n">07</span> The monthly routine</h2>
+
+      <div class="routine">
+        <div class="beat">
+          <div class="beat-when">Every day<br />Accountant</div>
+          <div>
+            <p>
+              Record entries as they happen, while you still have the receipt in your hand. Attach
+              the reference or a photo link to every expense.
+            </p>
+          </div>
+        </div>
+
+        <div class="beat">
+          <div class="beat-when">2–3× a week<br />Auditor</div>
+          <div>
+            <p>
+              Clear the approvals queue. Entries sitting pending mean the balance on the Overview is
+              understating what the hub has actually spent.
+            </p>
+          </div>
+        </div>
+
+        <div class="beat">
+          <div class="beat-when">Month end<br />Auditor</div>
+          <div>
+            <ol>
+              <li>Clear the approvals queue completely.</li>
+              <li>Open <strong>Exceptions</strong> and work through each list. Ask about anything you do not recognise.</li>
+              <li>Reconcile against the outside record: the bank statement, the mobile money statement, and a physical count of the cash box.</li>
+              <li>Open <strong>Settings → Close a month</strong>, enter the cash you counted, check the variance, confirm.</li>
+              <li>Keep the CSV export from <strong>Reports</strong> for the month with your records.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <p style="margin-top:20px">
+        Once the month is closed its numbers cannot drift. Anything discovered afterwards is
+        recorded as a correction in the current month, which is exactly how a paper cashbook handles
+        it.
+      </p>
+    </section>
+
+    <!-- ============================================================ 8 -->
+    <section id="messages">
+      <h2><span class="n">08</span> Messages you might see</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Message</th>
+              <th scope="col">What it means</th>
+              <th scope="col">What to do</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="msg">You recorded this entry, so someone else has to approve it.</td>
+              <td>You are trying to approve your own work.</td>
+              <td>Ask a different auditor.</td>
+            </tr>
+            <tr>
+              <td class="msg">Your role (auditor) cannot do this.</td>
+              <td>Auditors do not record entries — the separation is the point.</td>
+              <td>Ask the accountant to record it.</td>
+            </tr>
+            <tr>
+              <td class="msg">March 2026 is closed. Record the correction in an open month instead.</td>
+              <td>The entry is dated inside a closed month.</td>
+              <td>Record it in the current month as a correction, or ask an administrator to reopen the month.</td>
+            </tr>
+            <tr>
+              <td class="msg">3 entries are still waiting for approval in March 2026.</td>
+              <td>You are closing a month that still has pending entries.</td>
+              <td>Clear the approvals queue, then close.</td>
+            </tr>
+            <tr>
+              <td class="msg">You can only edit entries you recorded yourself.</td>
+              <td>It is someone else's entry.</td>
+              <td>Ask them to change it, or ask an auditor to void it.</td>
+            </tr>
+            <tr>
+              <td class="msg">This entry has already been reviewed. Ask an auditor to void it.</td>
+              <td>Pending entries can be cancelled by whoever recorded them; reviewed ones cannot.</td>
+              <td>Ask an auditor to void it.</td>
+            </tr>
+            <tr>
+              <td class="msg">This entry was voided, so it can no longer be edited.</td>
+              <td>Void is final.</td>
+              <td>Record a new, correct entry.</td>
+            </tr>
+            <tr>
+              <td class="msg">"Rent" is an expense line, so it cannot hold money coming in.</td>
+              <td>The budget line does not match the direction.</td>
+              <td>Pick an income line, or change the direction.</td>
+            </tr>
+            <tr>
+              <td class="msg">A budget line with that name already exists.</td>
+              <td>Duplicate name.</td>
+              <td>Reuse the existing line, or reactivate it if it was deactivated.</td>
+            </tr>
+            <tr>
+              <td class="msg">Someone already uses that email address.</td>
+              <td>That person already has an account.</td>
+              <td>Reactivate their existing account instead of making a second one.</td>
+            </tr>
+            <tr>
+              <td class="msg">2 of 40 rows still have a problem, so nothing was imported.</td>
+              <td>An import with bad rows.</td>
+              <td>Fix the rows it names in your sheet and upload again.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================================ 9 -->
+    <section id="questions">
+      <h2><span class="n">09</span> Questions people ask</h2>
+
+      <div class="faq">
+        <details>
+          <summary>My entry does not show in the balance. Is it lost?</summary>
+          <div class="faq-body">
+            <p>
+              No. It is pending. Look at the Status column — it will say Pending, with a dash in the
+              balance column. It counts the moment an auditor approves it.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Why can't I approve my own entry? I know it is correct.</summary>
+          <div class="faq-body">
+            <p>
+              Because the value of the check comes entirely from a second pair of eyes. An approval
+              you gave yourself proves nothing to an auditor next year. The rule holds for
+              administrators too.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Where is the delete button?</summary>
+          <div class="faq-body">
+            <p>
+              There isn't one. Void the entry instead, with a reason. Deleting would leave a hole in
+              the record with nothing to explain it; a voided entry explains itself.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>I recorded 45,000 but it was 40,000.</summary>
+          <div class="faq-body">
+            <p>
+              If it is still pending, edit it. If it has been approved, edit it anyway — it goes back
+              to pending and an auditor reviews the change, seeing exactly what moved. Both versions
+              stay in the audit trail.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Can an administrator quietly change the audit trail?</summary>
+          <div class="faq-body">
+            <p>
+              No. Nothing writes to the trail except the act of doing something, and there is no
+              screen, setting or button anywhere that edits or removes an entry from it.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>We closed the month and then found a receipt.</summary>
+          <div class="faq-body">
+            <p>
+              Record it in the current month with a description saying which month it belongs to.
+              That is what a paper cashbook does. If it is large enough to matter to the closed
+              month's figures, an administrator can reopen the month — and the reopening is logged.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Two people recorded the same payment.</summary>
+          <div class="faq-body">
+            <p>
+              It will appear under <strong>Exceptions → Possible duplicates</strong>. Void one of
+              them with the reason "duplicate of the entry recorded by …".
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Someone left the hub.</summary>
+          <div class="faq-body">
+            <p>
+              Deactivate their account in Settings → People. Do not delete it and do not reuse it for
+              a new person — everything they recorded is attributed to them, and that attribution
+              needs to stay true.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>The numbers on Reports and the Ledger disagree.</summary>
+          <div class="faq-body">
+            <p>
+              They should never disagree for the same date range, since both count only approved
+              entries. Check that you are comparing the same range and that the ledger is not
+              filtered. If they still disagree, report it — that is a real defect.
+            </p>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- =========================================================== 10 -->
+    <section id="scope">
+      <h2><span class="n">10</span> What this system does not do</h2>
+
+      <p>By design, so you know to handle these elsewhere:</p>
+
+      <ul>
+        <li>It does not store receipt images. It stores a link to one.</li>
+        <li>It handles Rwandan francs only.</li>
+        <li>It is not double-entry bookkeeping and has no chart of accounts.</li>
+        <li>It does not issue invoices.</li>
+        <li>It does not connect to a bank or mobile money feed. Reconciliation is a human comparing this book against a statement.</li>
+        <li>It does not send email or SMS notifications. The pending count in the sidebar is the reminder.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <span>UR Binary Hub Finance — user manual</span>
+    <span>Questions about access go to your administrator</span>
+  </footer>
+</div>
