@@ -35,6 +35,18 @@ const transactionSchema = new mongoose.Schema(
     method: { type: String, enum: METHODS, default: 'cash' },
     reference: { type: String, trim: true, maxlength: 120, default: '' },
     receiptUrl: { type: String, trim: true, maxlength: 500, default: '' },
+    // A receipt held on this server, as opposed to receiptUrl's link elsewhere.
+    attachment: {
+      type: {
+        filename: { type: String, required: true },
+        originalName: { type: String, default: 'receipt' },
+        mimeType: { type: String, default: 'application/octet-stream' },
+        size: { type: Number, default: 0 },
+        uploadedAt: { type: Date, default: Date.now },
+      },
+      default: null,
+      _id: false,
+    },
     payee: { type: String, trim: true, maxlength: 160, default: '' },
     note: { type: String, trim: true, maxlength: [500, 'Keep the note under 500 characters.'], default: '' },
 

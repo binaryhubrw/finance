@@ -31,7 +31,7 @@ Your role decides what you can do. An administrator sets it when your account is
 
 | Role | What it is for | Can do |
 |---|---|---|
-| **Accountant** | The person who handles the money day to day | Records entries. Edits or cancels **their own** entries, but only while still pending. Views the ledger and reports. Exports CSV. |
+| **Accountant** | The person who handles the money day to day | Records entries. Edits or cancels **their own** entries, but only while still pending. Views the ledger and reports. Exports to Excel. |
 | **Auditor** | The person who checks the accountant's work | Approves, rejects and voids entries. Reads the audit trail and exceptions. Closes months. Exports. **Cannot record or edit entries.** |
 | **Administrator** | The person who runs the system | Everything an auditor can do, plus manages people and budget lines. |
 | **Viewer** | Anyone who needs to see the numbers | Reads the ledger and reports. Changes nothing. |
@@ -154,7 +154,9 @@ Four figures across the top:
 
 - **Opening balance** — what the hub held at the start of the month
 - **Money in** and **Money out** — approved movements during the month
-- **Closing balance** — the headline number: what the hub holds now
+- **Current balance** — the headline number: what the hub holds now. For a month that has
+  finished, or one that has been closed, it reads **Closing balance** instead, because the
+  figure is final
 
 Then **Awaiting approval**, showing how many entries are waiting and what they are worth.
 Click it to go straight to Approvals. Below that, six months of money in and out side by side,
@@ -172,8 +174,8 @@ Underneath each description you also get the payee, the reference and the budget
 
 **Reading the rows:**
 
-- The row above the first entry is the **opening balance** — what was already in the book
-  before this range starts.
+- Entries read **newest first**. The **opening balance** is therefore the last row, not the
+  first — it is what the book held before the oldest entry on screen.
 - **Pending** rows carry an amber marker down the left edge, and the balance column shows a
   dash. That gap is the point: the entry has not counted yet.
 - **Void** rows are dimmed and struck through, with the reason shown.
@@ -188,8 +190,8 @@ Filter by date alone and the column comes back.
 **Filters:** date range, direction, budget line, method, status, search, and who recorded it.
 **Clear filters** resets them.
 
-**Export CSV** downloads exactly what you are looking at, with amounts as plain numbers so a
-spreadsheet adds them up correctly.
+**Export to Excel** downloads exactly what you are looking at as a spreadsheet, with the
+amounts already formatted and totals at the foot.
 
 ### Recording an entry
 
@@ -224,7 +226,8 @@ decision. You can only touch entries you recorded yourself:
 **Import a sheet** on the Ledger, next to Record entry. Accountants and administrators only.
 Use it when you have a batch to enter — a month of receipts, a list from the bank.
 
-1. **Download the template.** It opens in Excel and has the right columns already.
+1. **Download the template.** It opens in Excel with the right columns, and carries a second
+   sheet listing every budget line so you can copy the names exactly.
 2. **Fill in one row per entry.** Dates as `dd/mm/yyyy`, one budget line per row spelled the way
    it appears in the system. The dialog lists every budget line in use, so copy from there.
 3. **Upload it.** `.xlsx` straight from Excel, Numbers or Google Sheets works, so does `.csv`.
@@ -243,14 +246,22 @@ audit trail naming the file it came from.
 
 ### Approvals
 
-The auditor's working screen. Oldest first, because the oldest have waited longest.
+The auditor's working screen. Every list reads newest first.
 
-Each entry shows everything you need to decide without clicking anywhere: description, amount,
+Three tabs run across the top — **Pending**, **Approved** and **Rejected** — each showing how
+many entries are in that state, what they are worth, and their share of the book. Clicking one
+filters the table beneath it. The screen opens on Pending; Approved and Rejected show who made
+the decision, with the comment either decision carried.
+
+Each row shows everything you need to decide without clicking anywhere: description, amount,
 budget line, who recorded it and when, and the receipt reference. Warning lines appear when
 something deserves attention — no receipt reference, or the entry was edited after a previous
 review.
 
-- **Approve** — the entry counts from that moment. The balance moves by exactly that amount.
+- **Preview** — opens the attached receipt beside the decision, so you can check it against the
+  amount without leaving the queue. An expense with no receipt says so in the same place.
+- **Approve** — the entry counts from that moment, and the balance moves by exactly that amount.
+  You can add a comment ("checked against the bank statement"), but you do not have to.
 - **Reject** — you must give a reason. The entry stays visible with your reason attached so the
   accountant knows what to fix.
 
@@ -313,7 +324,9 @@ Totals over any date range. Shortcuts for **This month**, **Last month**, **This
 - **Split by payment method** — how much moved as cash, as mobile money, through the bank
 - **Month by month** as a table
 
-Every table has its own **CSV** button.
+**Download Excel** gives you the lot as one spreadsheet — a sheet per table plus a summary
+sheet naming the range and the currency, with the figures already formatted. Open it, print
+it, or attach it to the month-end pack.
 
 Reports count approved entries only, so report totals and the ledger's closing balance for the
 same range always agree. If they ever disagree, something is wrong — say so.
@@ -368,7 +381,7 @@ the balance on the Overview is understating what the hub has actually spent.
 3. Reconcile against the outside record: the bank statement, the mobile money statement, and a
    physical count of the cash box.
 4. Open **Settings → Close a month**, enter the cash you counted, check the variance, confirm.
-5. Keep the CSV export from **Reports** for the month with your records.
+5. Keep the Excel export from **Reports** for the month with your records.
 
 Once the month is closed, its numbers cannot drift. Anything discovered afterwards is recorded
 as a correction in the current month, which is exactly how a paper cashbook handles it.
@@ -390,6 +403,7 @@ as a correction in the current month, which is exactly how a paper cashbook hand
 | *A budget line with that name already exists.* | Duplicate name. | Reuse the existing line, or reactivate it if it was deactivated. |
 | *Someone already uses that email address.* | That person already has an account. | Reactivate their existing account instead of making a second one. |
 | *2 of 40 rows still have a problem, so nothing was imported.* | An import with bad rows. | Fix the rows it names in your sheet and upload again. |
+| *3 of 5 entries need attention, so none were saved.* | Several entries recorded together, one of them wrong. | Fix the lines marked in the dialog, then save again. |
 
 ---
 

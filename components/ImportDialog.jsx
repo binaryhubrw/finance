@@ -2,11 +2,9 @@
 
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { downloadCsv, money, toInputDate } from '@/lib/format';
+import { money } from '@/lib/format';
 import { IMPORT_COLUMNS } from '@/lib/import';
 import Modal from '@/components/Modal';
-
-const today = () => toInputDate(new Date()).split('-').reverse().join('/');
 
 export default function ImportDialog({ open, onClose, categories }) {
   const router = useRouter();
@@ -15,8 +13,6 @@ export default function ImportDialog({ open, onClose, categories }) {
   const [file, setFile] = useState(null);
 
   const active = categories.filter((category) => category.active);
-  const anIncomeLine = active.find((c) => c.kind === 'income')?.name ?? 'Grants & donations';
-  const anExpenseLine = active.find((c) => c.kind === 'expense')?.name ?? 'Rent';
 
   const reset = () => {
     setState({ status: 'idle' });
@@ -29,16 +25,6 @@ export default function ImportDialog({ open, onClose, categories }) {
     onClose();
   };
 
-  function downloadTemplate() {
-    downloadCsv(
-      'hub-ledger-import-template.csv',
-      IMPORT_COLUMNS.map((column) => column.label),
-      [
-        [today(), 'out', 45000, anExpenseLine, 'Printer toner', 'Simba Supermarket', 'Cash', 'RCPT-104', '', ''],
-        [today(), 'in', 120000, anIncomeLine, 'Desk fees for March', 'Various members', 'Mobile money', 'MOMO-8831', '', ''],
-      ],
-    );
-  }
 
   async function send(chosen, dryRun) {
     const body = new FormData();
@@ -113,13 +99,17 @@ export default function ImportDialog({ open, onClose, categories }) {
           <div className="rounded-sm border border-rule bg-sunk px-3 py-3">
             <p className="label">How it works</p>
             <ol className="mt-2 list-decimal space-y-1 pl-4 text-[13px] text-ink-soft">
-              <li>Download the template and fill in one row per entry.</li>
+              <li>Download the template — it opens in Excel with the budget lines on a second sheet.</li>
               <li>Budget lines have to match the names below exactly.</li>
               <li>Upload it here to see what will happen before anything is saved.</li>
             </ol>
-            <button type="button" className="btn btn-sm mt-3" onClick={downloadTemplate}>
+            <a
+              className="btn btn-sm mt-3"
+              href="/api/transactions/import/template"
+              download
+            >
               Download template
-            </button>
+            </a>
           </div>
 
           <div className="mt-4 grid gap-4 sm:grid-cols-2">

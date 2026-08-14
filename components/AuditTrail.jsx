@@ -18,6 +18,9 @@ const NUMERIC_FIELDS = new Set(['amount', 'monthlyBudget', 'closingBalance', 'co
 function renderValue(field, value) {
   if (value === null || value === undefined || value === '') return 'empty';
   if (typeof value === 'boolean') return value ? 'yes' : 'no';
+  if (typeof value === 'object' && !Array.isArray(value)) {
+    return value.originalName ? `"${value.originalName}"` : 'a file';
+  }
   if (NUMERIC_FIELDS.has(field) && typeof value === 'number') return money(value);
   const text = String(value);
   if (/^\d{4}-\d{2}-\d{2}T/.test(text)) return text.slice(0, 10);

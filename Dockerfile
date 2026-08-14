@@ -7,7 +7,7 @@ RUN npm ci
 
 COPY . .
 
-# The repo has no static assets yet, so guarantee the dir exists for the runtime COPY.
+# Guarantee the dir exists for the runtime COPY even if brand assets are absent.
 RUN mkdir -p public
 
 RUN npm run build
@@ -28,6 +28,11 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/next.config.* ./
+
+# A named volume mounted here inherits this ownership on first use, so the
+# unprivileged runtime user can actually write receipts into it.
+RUN mkdir -p /data/uploads && chown -R node:node /data
+ENV UPLOAD_DIR=/data/uploads
 
 USER node
 

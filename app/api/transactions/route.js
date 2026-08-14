@@ -4,6 +4,7 @@ import Category from '@/models/Category';
 import { handler, ok, badRequest, searchParams, readBody } from '@/lib/http';
 import { requireUser, requireRole } from '@/lib/session';
 import { assertPeriodOpen } from '@/lib/period';
+import { verifyStored } from '@/lib/uploads';
 import { writeAudit, snapshotOf, plain } from '@/lib/audit';
 import { listTransactions, readParams, startOfDay } from '@/lib/queries';
 
@@ -60,6 +61,8 @@ export const POST = handler(async (request) => {
 
   await assertPeriodOpen(date);
 
+  const attachment = body.attachment ? await verifyStored(body.attachment) : null;
+
   const entry = await Transaction.create({
     date,
     description: String(body.description).trim(),
@@ -69,6 +72,7 @@ export const POST = handler(async (request) => {
     method: body.method ?? 'cash',
     reference: String(body.reference ?? '').trim(),
     receiptUrl: String(body.receiptUrl ?? '').trim(),
+    attachment,
     payee: String(body.payee ?? '').trim(),
     note: String(body.note ?? '').trim(),
     status: 'pending',

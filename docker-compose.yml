@@ -11,5 +11,12 @@ services:
       - .env
     environment:
       NODE_ENV: production
+      UPLOAD_DIR: /data/uploads
+    volumes:
+      # Receipts are financial records. Without this they live inside the
+      # container and are destroyed by the next deploy.
+      - finance-uploads:/data/uploads
     restart: unless-stopped
 
+volumes:
+  finance-uploads:

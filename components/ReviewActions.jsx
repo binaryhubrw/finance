@@ -6,37 +6,35 @@ import { api } from '@/lib/api';
 import Modal from '@/components/Modal';
 import Field from '@/components/Field';
 
-/** Approve or reject a pending entry. Rejection always carries a reason. */
+/**
+ * Approve or reject a pending entry. Both decisions can carry a comment;
+ * rejection requires one, because an entry sent back has to say what to fix,
+ * while an approval only sometimes needs a note ("verified against the bank
+ * statement") and should not be slowed down by a mandatory field.
+ */
 export default function ReviewActions({ entryId, ownEntry }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [rejecting, setRejecting] = useState(false);
-  const [reason, setReason] = useState('');
+  const [deciding, setDeciding] = useState(null); // 'approve' | 'reject' | null
+  const [comment, setComment] = useState('');
 
-  async function approve() {
+  const open = (decision) => {
+    setComment('');
+    setError('');
+    setDeciding(decision);
+  };
+
+  async function submit() {
     setBusy(true);
     setError('');
     try {
-      await api(`/api/transactions/${entryId}/approve`, { method: 'POST' });
-      router.refresh();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function reject() {
-    setBusy(true);
-    setError('');
-    try {
-      await api(`/api/transactions/${entryId}/reject`, {
+      await api(`/api/transactions/${entryId}/${deciding}`, {
         method: 'POST',
-        body: { reviewNote: reason },
+        body: { reviewNote: comment.trim() },
       });
-      setRejecting(false);
-      setReason('');
+      setDeciding(null);
+      setComment('');
       router.refresh();
     } catch (err) {
       setError(err.message);
@@ -44,10 +42,15 @@ export default function ReviewActions({ entryId, ownEntry }) {
       setBusy(false);
     }
   }
+
+  const rejecting = deciding === 'reject';
+  const blocked = busy || (rejecting && !comment.trim());
 
   return (
     <div className="flex flex-col items-stretch gap-2 sm:items-end">
-      {error ? <p className="text-[12px] text-debit sm:text-right">{error}</p> : null}
+      {error && !deciding ? (
+        <p className="text-[12px] text-debit sm:text-right">{error}</p>
+      ) : null}
 
       {ownEntry ? (
         <p className="text-[12px] text-ink-soft sm:text-right">
@@ -55,41 +58,62 @@ export default function ReviewActions({ entryId, ownEntry }) {
         </p>
       ) : (
         <div className="flex gap-2">
-          <button type="button" className="btn btn-debit" disabled={busy} onClick={() => setRejecting(true)}>
+          <button
+            type="button"
+            className="btn btn-debit"
+            disabled={busy}
+            onClick={() => open('reject')}
+          >
             Reject
           </button>
-          <button type="button" className="btn btn-credit" disabled={busy} onClick={approve}>
-            {busy ? 'Working' : 'Approve'}
+          <button
+            type="button"
+            className="btn btn-credit"
+            disabled={busy}
+            onClick={() => open('approve')}
+          >
+            Approve
           </button>
         </div>
       )}
 
       <Modal
-        open={rejecting}
-        onClose={() => setRejecting(false)}
-        title="Reject this entry"
-        description="The accountant sees this reason and can correct the entry."
+        open={Boolean(deciding)}
+        onClose={() => setDeciding(null)}
+        title={rejecting ? 'Reject this entry' : 'Approve this entry'}
+        description={
+          rejecting
+            ? 'The accountant sees this reason and can correct the entry.'
+            : 'The entry counts towards the balance from the moment you approve it.'
+        }
         width={480}
       >
         {error ? <p className="mb-3 text-[13px] text-debit">{error}</p> : null}
+
         <Field
-          label="Reason"
+          label={rejecting ? 'Reason' : 'Comment (optional)'}
           as="textarea"
-          value={reason}
-          onChange={(event) => setReason(event.target.value)}
-          hint="For example: the receipt number does not match the amount."
+          value={comment}
+          onChange={(event) => setComment(event.target.value)}
+          maxLength={500}
+          hint={
+            rejecting
+              ? 'For example: the receipt number does not match the amount.'
+              : 'For example: checked against the bank statement. Leave empty if there is nothing to add.'
+          }
         />
+
         <div className="mt-4 flex justify-end gap-2">
-          <button type="button" className="btn" onClick={() => setRejecting(false)}>
+          <button type="button" className="btn" onClick={() => setDeciding(null)} disabled={busy}>
             Cancel
           </button>
           <button
             type="button"
-            className="btn btn-debit"
-            disabled={busy || !reason.trim()}
-            onClick={reject}
+            className={`btn ${rejecting ? 'btn-debit' : 'btn-credit'}`}
+            disabled={blocked}
+            onClick={submit}
           >
-            Reject entry
+            {busy ? 'Working' : rejecting ? 'Reject entry' : 'Approve entry'}
           </button>
         </div>
       </Modal>

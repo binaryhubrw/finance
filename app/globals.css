@@ -35,6 +35,12 @@
   --color-flag:        #a35a07;   /* awaiting review */
   --color-flag-soft:   #fdf2e3;
 
+  /* The same three, dark enough to clear 4.5:1 as text on their own tints.
+     Fills and rules keep the lighter values above. */
+  --color-credit-deep: #0a5a3d;
+  --color-debit-deep:  #9a2c20;
+  --color-flag-deep:   #7d4506;
+
   --font-sans: var(--font-instrument), "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, monospace;
 
@@ -304,6 +310,92 @@
   .badge-approved { color: var(--color-credit); background: #e7f5ef;                 border-color: rgba(15, 122, 84, 0.22); }
   .badge-rejected { color: var(--color-debit);  background: #fdeeec;                 border-color: rgba(192, 57, 43, 0.22); }
   .badge-void     { color: var(--color-muted);  background: var(--color-sunk);       border-color: var(--color-rule-strong); }
+
+  /* ---- status tabs ----
+     Tabbed dividers, the way a physical cashbook separates its sections. The
+     selected tab loses its bottom rule and shares a surface with the table, so
+     the filter and the list it governs read as one object rather than as a row
+     of floating stat cards. */
+  .tab-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .tab {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 15px 16px 14px;
+    /* Each tab carries a wash of its own status colour, so the strip reads as
+       three states at a glance rather than three grey boxes. */
+    background: color-mix(in srgb, var(--tab-accent) 9%, var(--color-surface));
+    border-bottom: 1px solid var(--color-rule);
+    border-right: 1px solid var(--color-rule);
+    transition: background-color 120ms ease;
+  }
+  /* Keeps the share bars on one line across all three tabs however the
+     amounts above them wrap. */
+  .tab .tab-share { margin-top: auto; }
+  .tab:last-child { border-right: 0; }
+  .tab:hover { background: color-mix(in srgb, var(--tab-accent) 16%, var(--color-surface)); }
+
+  /* A band of status colour across the whole strip, full strength on the
+     selected tab and held back on the others. */
+  .tab::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -1px;
+    right: -1px;
+    height: 3px;
+    background: color-mix(in srgb, var(--tab-accent) 38%, transparent);
+  }
+
+  /* Selected: white, like the table it sits on, with its bottom rule dropped
+     so the two become one surface. */
+  .tab[aria-current='page'] {
+    background: var(--color-surface);
+    border-bottom-color: transparent;
+  }
+  .tab[aria-current='page']::before { background: var(--tab-accent); }
+
+  .tab-pending  { --tab-accent: var(--color-flag);   --tab-ink: var(--color-flag-deep); }
+  .tab-approved { --tab-accent: var(--color-credit); --tab-ink: var(--color-credit-deep); }
+  .tab-rejected { --tab-accent: var(--color-debit);  --tab-ink: var(--color-debit-deep); }
+
+  .tab-count {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 32px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--tab-ink);
+  }
+  .tab[aria-current='page'] .tab-count { font-weight: 600; }
+
+  .tab-label { color: var(--tab-ink); }
+
+  /* Share of all reviewable entries — the tabs double as a breakdown. */
+  .tab-share {
+    height: 4px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--tab-accent) 18%, var(--color-surface));
+    overflow: hidden;
+  }
+  .tab-share > span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--tab-accent);
+    opacity: 0.72;
+  }
+  .tab[aria-current='page'] .tab-share > span { opacity: 1; }
+
+  @media (max-width: 30rem) {
+    .tab { padding: 12px 10px; }
+    .tab-count { font-size: 24px; }
+  }
 
   /* ---- tables ---- */
   .t {

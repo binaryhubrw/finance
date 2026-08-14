@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { downloadCsv, formatMonth, money } from '@/lib/format';
+import { formatMonth, money } from '@/lib/format';
 import { METHOD_LABELS } from '@/lib/enums';
 import Money from '@/components/Money';
 import Bars from '@/components/Bars';
+import { DownloadIcon } from '@/components/Icons';
 
 const iso = (date) => date.toISOString().slice(0, 10);
 
@@ -67,6 +68,11 @@ export default function ReportView({ summary, range }) {
 
   const share = (value, total) => (total > 0 ? Math.round((value / total) * 100) : 0);
 
+  // A range that runs to today has not closed yet, so the figure is simply
+  // where the balance stands now.
+  const stillOpen = !range.to || range.to >= new Date().toISOString().slice(0, 10);
+  const balanceLabel = stillOpen ? 'Current balance' : 'Closing balance';
+
   const categoryRows = (rows, total) =>
     rows.map((row) => {
       const budget = row.monthlyBudget ? row.monthlyBudget * months : null;
@@ -115,6 +121,15 @@ export default function ReportView({ summary, range }) {
             Show range
           </button>
 
+          <a
+            className="btn"
+            href={`/api/reports/export?from=${range.from}&to=${range.to}`}
+            download
+          >
+            <DownloadIcon size={15} />
+            Download Excel
+          </a>
+
           <div className="ml-auto flex flex-wrap gap-2">
             {shortcuts().map((shortcut) => (
               <button
@@ -156,7 +171,7 @@ export default function ReportView({ summary, range }) {
           </p>
         </div>
         <div className="card tint-accent border-accent/15 px-4 py-4">
-          <p className="label">Closing balance</p>
+          <p className="label">{balanceLabel}</p>
           <p className="mt-2">
             <Money value={summary.closingBalance} size="xl" />
           </p>
@@ -173,26 +188,6 @@ export default function ReportView({ summary, range }) {
         <section className="card px-4 py-4">
           <div className="flex items-baseline justify-between gap-3">
             <h2 className="text-[16px] font-semibold tracking-[-0.02em]">Spending by budget line</h2>
-            <button
-              type="button"
-              className="btn btn-sm"
-              disabled={!spending.length}
-              onClick={() =>
-                downloadCsv(
-                  `spending-${range.from}-to-${range.to}.csv`,
-                  ['Budget line', 'Entries', 'Amount', 'Share %', 'Budget for range'],
-                  spending.map((row) => [
-                    row.name,
-                    row.count,
-                    row.total,
-                    share(row.total, spendTotal),
-                    row.monthlyBudget ? row.monthlyBudget * months : '',
-                  ]),
-                )
-              }
-            >
-              CSV
-            </button>
           </div>
           <div className="mt-3">
             <Bars
@@ -205,25 +200,6 @@ export default function ReportView({ summary, range }) {
         <section className="card px-4 py-4">
           <div className="flex items-baseline justify-between gap-3">
             <h2 className="text-[16px] font-semibold tracking-[-0.02em]">Income by budget line</h2>
-            <button
-              type="button"
-              className="btn btn-sm"
-              disabled={!income.length}
-              onClick={() =>
-                downloadCsv(
-                  `income-${range.from}-to-${range.to}.csv`,
-                  ['Budget line', 'Entries', 'Amount', 'Share %'],
-                  income.map((row) => [
-                    row.name,
-                    row.count,
-                    row.total,
-                    share(row.total, incomeTotal),
-                  ]),
-                )
-              }
-            >
-              CSV
-            </button>
           </div>
           <div className="mt-3">
             <Bars
@@ -237,25 +213,6 @@ export default function ReportView({ summary, range }) {
       <section className="card">
         <div className="flex items-baseline justify-between gap-3 px-4 py-3">
           <h2 className="text-[16px] font-semibold tracking-[-0.02em]">Payment methods</h2>
-          <button
-            type="button"
-            className="btn btn-sm"
-            disabled={!summary.byMethod.length}
-            onClick={() =>
-              downloadCsv(
-                `methods-${range.from}-to-${range.to}.csv`,
-                ['Method', 'Direction', 'Entries', 'Amount'],
-                summary.byMethod.map((row) => [
-                  METHOD_LABELS[row.method] ?? row.method,
-                  row.type === 'in' ? 'Money in' : 'Money out',
-                  row.count,
-                  row.total,
-                ]),
-              )
-            }
-          >
-            CSV
-          </button>
         </div>
         <div className="overflow-x-auto">
           <table className="t min-w-[520px]">
@@ -295,26 +252,6 @@ export default function ReportView({ summary, range }) {
       <section className="card">
         <div className="flex items-baseline justify-between gap-3 px-4 py-3">
           <h2 className="text-[16px] font-semibold tracking-[-0.02em]">Month by month</h2>
-          <button
-            type="button"
-            className="btn btn-sm"
-            disabled={!summary.byMonth.length}
-            onClick={() =>
-              downloadCsv(
-                `months-${range.from}-to-${range.to}.csv`,
-                ['Month', 'Entries', 'Money in', 'Money out', 'Net'],
-                summary.byMonth.map((row) => [
-                  formatMonth(row.year, row.month),
-                  row.count,
-                  row.moneyIn,
-                  row.moneyOut,
-                  row.net,
-                ]),
-              )
-            }
-          >
-            CSV
-          </button>
         </div>
         <div className="overflow-x-auto">
           <table className="t min-w-[560px]">

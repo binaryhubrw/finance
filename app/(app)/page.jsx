@@ -52,6 +52,13 @@ export default async function OverviewPage({ searchParams }) {
     isMonthClosed(year, month),
   ]);
 
+  // A month still running has no closing balance yet — what it has is the
+  // balance as things stand. Once the month is over, or has been closed, the
+  // figure is final and the older name is the right one.
+  const now = new Date();
+  const isThisMonth = year === now.getUTCFullYear() && month === now.getUTCMonth() + 1;
+  const balanceLabel = isThisMonth && !closed ? 'Current balance' : 'Closing balance';
+
   const byMonth = new Map(trend.byMonth.map((row) => [`${row.year}-${row.month}`, row]));
   const trendRows = [];
   for (let i = 5; i >= 0; i -= 1) {
@@ -88,7 +95,7 @@ export default async function OverviewPage({ searchParams }) {
         <Figure label="Money in" value={summary.moneyIn} tone="in" />
         <Figure label="Money out" value={summary.moneyOut} tone="out" />
         <Figure
-          label="Closing balance"
+          label={balanceLabel}
           value={summary.closingBalance}
           feature
           note={`${summary.transactionCount} approved ${

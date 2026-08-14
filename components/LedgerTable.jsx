@@ -4,24 +4,12 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { qs } from '@/lib/api';
 import { METHOD_LABELS, STATUS_LABELS } from '@/lib/enums';
-import { downloadCsv, formatDate, money } from '@/lib/format';
+import { formatDate, money } from '@/lib/format';
 import Money from '@/components/Money';
 import EntryDialog from '@/components/EntryDialog';
 import { DownloadIcon, PlusIcon, UploadIcon } from '@/components/Icons';
 import ImportDialog from '@/components/ImportDialog';
-
-const CSV_HEADERS = [
-  'Date',
-  'Description',
-  'Paid to / received from',
-  'Budget line',
-  'Method',
-  'Status',
-  'Reference',
-  'Money in',
-  'Money out',
-  'Balance',
-];
+import AttachmentPreview from '@/components/AttachmentPreview';
 
 export default function LedgerTable({ data, categories, query, user }) {
   const [editing, setEditing] = useState(null);
@@ -36,21 +24,6 @@ export default function LedgerTable({ data, categories, query, user }) {
     return String(entry.recordedBy?._id ?? entry.recordedBy) === user.id && entry.status === 'pending';
   };
 
-  const exportCsv = () => {
-    const rows = data.items.map((entry) => [
-      formatDate(entry.date),
-      entry.description,
-      entry.payee ?? '',
-      entry.category?.name ?? '',
-      METHOD_LABELS[entry.method] ?? entry.method,
-      STATUS_LABELS[entry.status] ?? entry.status,
-      entry.reference ?? '',
-      entry.type === 'in' ? entry.amount : '',
-      entry.type === 'out' ? entry.amount : '',
-      entry.runningBalance ?? '',
-    ]);
-    downloadCsv(`hub-ledger-${query.from || 'all'}-to-${query.to || 'today'}.csv`, CSV_HEADERS, rows);
-  };
 
   const pageHref = (page) => `/ledger${qs({ ...query, page })}`;
 
@@ -66,10 +39,15 @@ export default function LedgerTable({ data, categories, query, user }) {
             : ''}
         </p>
         <div className="flex gap-2">
-          <button type="button" className="btn" onClick={exportCsv} disabled={!data.items.length}>
+          <a
+            className={`btn ${data.items.length ? '' : 'pointer-events-none opacity-45'}`}
+            href={`/api/transactions/export${qs(query)}`}
+            aria-disabled={data.items.length ? undefined : true}
+            download
+          >
             <DownloadIcon size={15} />
-            Export CSV
-          </button>
+            Export to Excel
+          </a>
           {canRecord ? (
             <>
               <button type="button" className="btn" onClick={() => setImporting(true)}>
@@ -102,22 +80,6 @@ export default function LedgerTable({ data, categories, query, user }) {
           </thead>
 
           <tbody>
-            {data.isLedgerView ? (
-              <tr className="bg-sunk/60">
-                <td className="num whitespace-nowrap text-[12px] text-ink-soft">
-                  {query.from ? formatDate(query.from) : '—'}
-                </td>
-                <td colSpan={3} className="label">
-                  Opening balance
-                </td>
-                <td />
-                <td />
-                <td className="rail">
-                  <Money value={data.openingBalance} size="sm" />
-                </td>
-              </tr>
-            ) : null}
-
             {data.items.map((entry) => {
               const voided = entry.status === 'void';
               const pending = entry.status === 'pending';
@@ -163,8 +125,29 @@ export default function LedgerTable({ data, categories, query, user }) {
                     {entry.status === 'rejected' && entry.reviewNote ? (
                       <p className="mt-1 text-[12px] text-debit">Rejected: {entry.reviewNote}</p>
                     ) : null}
+                    {entry.status === 'approved' && entry.reviewNote ? (
+                      <p className="mt-1 text-[12px] text-ink-soft">
+                        Approved: {entry.reviewNote}
+                      </p>
+                    ) : null}
                     {entry.editedAfterReview && entry.status === 'pending' ? (
                       <p className="mt-1 text-[12px] text-flag">Edited after review</p>
+                    ) : null}
+
+                    {entry.attachment || entry.receiptUrl ? (
+                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
+                        <AttachmentPreview attachment={entry.attachment} compact />
+                        {entry.receiptUrl ? (
+                          <a
+                            className="link text-[12px]"
+                            href={entry.receiptUrl}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                          >
+                            Receipt link
+                          </a>
+                        ) : null}
+                      </div>
                     ) : null}
                   </td>
 
@@ -204,6 +187,22 @@ export default function LedgerTable({ data, categories, query, user }) {
                 </tr>
               );
             })}
+
+            {data.isLedgerView && data.items.length ? (
+              <tr className="bg-sunk/60">
+                <td className="num whitespace-nowrap text-[12px] text-ink-soft">
+                  {query.from ? formatDate(query.from) : '—'}
+                </td>
+                <td colSpan={3} className="label">
+                  Opening balance
+                </td>
+                <td />
+                <td />
+                <td className="rail">
+                  <Money value={data.openingBalance} size="sm" />
+                </td>
+              </tr>
+            ) : null}
 
             {data.items.length === 0 ? (
               <tr>

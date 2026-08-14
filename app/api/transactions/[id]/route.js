@@ -4,6 +4,7 @@ import Category from '@/models/Category';
 import { handler, ok, badRequest, forbidden, notFound, conflict, readBody } from '@/lib/http';
 import { requireUser, requireRole } from '@/lib/session';
 import { assertPeriodOpen } from '@/lib/period';
+import { verifyStored } from '@/lib/uploads';
 import { writeAudit, diff, summarise, snapshotOf, plain } from '@/lib/audit';
 import { transactionWithHistory, startOfDay } from '@/lib/queries';
 
@@ -19,6 +20,7 @@ const EDITABLE = [
   'method',
   'reference',
   'receiptUrl',
+  'attachment',
   'payee',
   'note',
 ];
@@ -83,6 +85,11 @@ export const PATCH = handler(async (request, { params }) => {
   }
   if (body.reference !== undefined) entry.reference = String(body.reference).trim();
   if (body.receiptUrl !== undefined) entry.receiptUrl = String(body.receiptUrl).trim();
+  if (body.attachment !== undefined) {
+    // Replacing an attachment leaves the old file on disk. Nothing in this app
+    // destroys evidence, and the audit trail records which file it was.
+    entry.attachment = body.attachment ? await verifyStored(body.attachment) : null;
+  }
   if (body.payee !== undefined) entry.payee = String(body.payee).trim();
   if (body.note !== undefined) entry.note = String(body.note).trim();
 

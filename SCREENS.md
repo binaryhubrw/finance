@@ -86,7 +86,7 @@ Opens on the current month.
 | **Opening balance** | Everything approved *before* this month, netted. |
 | **Money in** | Approved money in during the month. |
 | **Money out** | Approved money out during the month. |
-| **Closing balance** | Opening + in − out. The headline figure, with the count of approved entries beneath it. |
+| **Current balance** / **Closing balance** | Opening + in − out, with the count of approved entries beneath. It reads **Current balance** while the month is still running, and **Closing balance** once the month is over or has been closed — a month still in progress has no closing figure yet. |
 | **Awaiting approval** | How many entries are pending and what they are worth. Reads "Nothing waiting. The accountant is up to date." when the queue is clear. |
 | **Six months in and out** | Green and red bars per month, this month and the five before it. Approved entries only. |
 | **Largest expenses this month** | The five biggest approved expenses, largest first, with budget line and date. |
@@ -125,7 +125,7 @@ balance over a filtered selection would be arithmetic that means nothing.
 | Control | What it does | Who sees it |
 |---|---|---|
 | **Entry count** (left) | How many entries match, and how many of those are still pending and what they are worth. | All |
-| **Export CSV** | Downloads exactly the rows on screen, amounts as bare numbers. Disabled when there is nothing to export. | All |
+| **Export to Excel** | Downloads exactly the rows on screen as an `.xlsx` workbook — formatted amounts, real dates, and a totals block. Disabled when there is nothing to export. | All |
 | **Import a sheet** | Opens the spreadsheet import dialog. | ACC ADM |
 | **Record entry** | Opens the entry form. | ACC ADM |
 
@@ -133,15 +133,15 @@ balance over a filtered selection would be arithmetic that means nothing.
 
 | Column | What it holds |
 |---|---|
-| **Date** | The date the money moved. An amber bar on this edge means pending. |
-| **Description** | What the entry is for, with payee · reference · budget line beneath. A voided or rejected entry shows its reason here, and an edited one is marked "Edited after review". |
+| **Date** | The date the money moved. An amber bar on this edge means pending. Rows read newest first. |
+| **Description** | What the entry is for, with payee · reference · budget line beneath. A voided, rejected or commented-on approved entry shows its note here, an edited one is marked "Edited after review", and a **Preview** button appears when a receipt file is attached. |
 | **Method** | Cash, mobile money, bank or other. |
 | **Status** | The badge. |
 | **Money in** | Green, filled only for money in. |
 | **Money out** | Red, filled only for money out. |
 | **Balance** | The running balance after this entry, in its own tinted lane. Approved rows only — everything else shows a dash. Hidden entirely when filters are active. |
 
-The first row is the **opening balance** for the range.
+Because the newest entry is at the top, the **opening balance** row sits at the *foot* of the table — it is what the book held before the oldest entry shown. Each balance is still the balance as it stood after that entry, so the column counts down the page.
 
 | Control | What it does |
 |---|---|
@@ -190,7 +190,7 @@ Opened by **Import a sheet** on the Ledger. ACC and ADM only.
 
 | Control | What it does |
 |---|---|
-| **Download template** | Downloads a CSV with the right column headings and two filled-in example rows, using your own budget lines. Opens in Excel. |
+| **Download template** | Downloads an `.xlsx` workbook: an **Entries** sheet with the right headings and two example rows, and a **Budget lines** sheet listing every line so the names can be copied rather than retyped. |
 | **Columns** (list) | Every column the importer understands, which are required, and the format each expects. |
 | **Budget lines in use** (list) | Every active line with its direction. Names in the sheet must match these. |
 | **Spreadsheet** (file picker) | Accepts `.xlsx` and `.csv`, up to 2MB and 500 rows. Choosing a file immediately checks it — nothing is saved. |
@@ -210,12 +210,30 @@ own audit entry naming the file it came from.
 
 The review queue. Everyone can see it; only AUD and ADM can act.
 
-Entries are listed oldest first. The line under the title says how many are waiting and by
-how much they would move the balance.
+### The three status tabs
 
-**What each card shows:** description and amount, then date · budget line · method · payee;
-who recorded it, how long ago, and the exact timestamp; the reference if there is one; and
-the note if there is one.
+Three tabs run across the top, each carrying its own colour: **Pending** (amber),
+**Approved** (green) and **Rejected** (red). They are both a summary and the filter for the
+table underneath — the selected one loses its bottom rule and shares a surface with the
+table, so the two read as one object.
+
+| On each tab | What it shows |
+|---|---|
+| Count | How many entries are in that state, in that state's colour. |
+| Worth | The total value of them. |
+| Share bar | That state's share of every reviewable entry in the book, with the percentage beneath. |
+
+Selecting a tab puts it in the address (`/approvals?status=approved`), so a view can be
+bookmarked or sent to someone. Void is not one of the tabs — a voided entry is a cancelled
+one, and it lives in the Ledger.
+
+### The table
+
+Columns: **Date · Entry · Recorded by · Amount**, then a last column that changes with the
+tab — **Decision** (the buttons), **Approved by**, or **Reason**.
+
+The Date cell carries a 3px marker in the row's status colour. Under the description sit the
+budget line, method, payee and reference, plus the note and receipt link when present.
 
 | Element | When it appears |
 |---|---|
@@ -225,9 +243,14 @@ the note if there is one.
 
 | Control | What it does | Who sees it |
 |---|---|---|
-| **Approve** | Approves immediately. The balance moves by that amount from this moment. | AUD ADM |
-| **Reject** | Opens the reason box. | AUD ADM |
-| **Cancel** / **Reject entry** (in the box) | Back out, or confirm the rejection. A reason is required — **Reject entry** stays disabled until you type one. | AUD ADM |
+| **Preview** | Opens the entry's receipt file in a panel, without leaving the table. Only shown when a file is attached; an expense with none says *"No receipt to check"* in its place. | All |
+| **Approve** | Opens the approval box, which carries an **optional** comment. | AUD ADM |
+| **Reject** | Opens the rejection box, which requires a **reason**. | AUD ADM |
+| **Cancel** / **Approve entry** / **Reject entry** | Back out, or confirm. **Reject entry** stays disabled until a reason is typed; **Approve entry** is available straight away. | AUD ADM |
+
+Every tab reads newest first. Approved and rejected show who made the decision and when,
+along with the comment either decision carried. Both settled lists show the newest 50, with a link into the ledger
+when there are more.
 
 If you recorded the entry yourself, the buttons are replaced by *"You recorded this one, so
 another reviewer has to clear it."* Accountants and viewers see *"An auditor reviews this
@@ -299,21 +322,25 @@ Totals over any date range. All roles.
 | **From** / **To** | The range. Nothing changes until you press Show range. |
 | **Show range** | Applies the dates. |
 | **This month** / **Last month** / **This quarter** / **This year** | One-click ranges. |
+| **Download Excel** | Downloads the whole report as one `.xlsx` workbook — a sheet per table, with a styled header row, thousands separators, real dates and percentages. |
 
-**The five figures:** Opening balance · Money in · Money out · Net · Closing balance. The
-closing balance is emphasised and carries the count of approved entries, plus anything still
-pending in that range.
+**The five figures:** Opening balance · Money in · Money out · Net · **Current balance**
+(shown as **Closing balance** when the range ends in the past). The balance is emphasised
+and carries the count of approved entries, plus anything still pending in that range.
 
-| Panel | What it shows | Its CSV button exports |
+Each panel becomes a sheet in the downloaded workbook:
+
+| Panel | What it shows | Its sheet holds |
 |---|---|---|
 | **Spending by budget line** | Red bars, largest first, each with its share of total spending. Where the line has a monthly budget, the caption compares actual against budget for the range. | Budget line, entries, amount, share %, budget for range |
 | **Income by budget line** | The same in green. | Budget line, entries, amount, share % |
 | **Payment methods** | A table splitting each method by direction. | Method, direction, entries, amount |
 | **Month by month** | A table of money in, money out and net per month. | Month, entries, money in, money out, net |
 
-Every CSV button is disabled when its table is empty. All four panels count **approved
-entries only**, which is why report totals reconcile exactly with the ledger's closing
-balance for the same range.
+The workbook opens on a **Summary** sheet carrying the range, the currency, the five figures
+and the pending count, so the file explains itself away from the app. All four panels count
+**approved entries only**, which is why report totals reconcile exactly with the ledger's
+closing balance for the same range.
 
 ---
 

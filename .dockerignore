@@ -18,3 +18,6 @@ npm-debug.log*
 yarn-error.log*
 .DS_Store
 *.pem
+
+# Local receipts must not be baked into the image.
+uploads

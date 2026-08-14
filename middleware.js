@@ -24,5 +24,11 @@ export function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\.svg$).*)'],
+  // Static files are skipped by extension rather than by name: the sign-in page
+  // has to be able to load the logo while nobody is signed in, and an asset
+  // that redirects to /login is an invisible one. No app route contains a dot,
+  // so matching on the extension is safe.
+  matcher: [
+    '/((?!api|_next/static|_next/image|.*\\.(?:png|jpg|jpeg|gif|svg|webp|avif|ico|txt|xml|webmanifest)$).*)',
+  ],
 };

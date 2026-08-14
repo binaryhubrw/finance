@@ -36,7 +36,8 @@ export const POST = handler(async (request, { params }) => {
   entry.status = 'approved';
   entry.reviewedBy = actor.id;
   entry.reviewedAt = new Date();
-  if (body?.reviewNote) entry.reviewNote = String(body.reviewNote).trim().slice(0, 500);
+  const comment = String(body?.reviewNote ?? '').trim().slice(0, 500);
+  if (comment) entry.reviewNote = comment;
   await entry.save();
 
   await writeAudit({
@@ -44,7 +45,9 @@ export const POST = handler(async (request, { params }) => {
     entityId: entry._id,
     action: 'approve',
     actor,
-    summary: `Approved “${entry.description}” for ${entry.amount.toLocaleString('en-US')}`,
+    summary: `Approved “${entry.description}” for ${entry.amount.toLocaleString('en-US')}${
+      comment ? ` — ${comment}` : ''
+    }`,
     changes: [{ field: 'status', from, to: 'approved' }],
     snapshot: snapshotOf(entry),
   });

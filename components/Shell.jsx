@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { ROLE_LABELS } from '@/lib/enums';
 import { NavLinks, SignOutButton } from '@/components/NavLinks';
-import { BrandMark } from '@/components/Icons';
+import Logo from '@/components/Logo';
 
 export default function Shell({ user, pendingCount, currency, children }) {
   const initials = user.name
@@ -16,7 +16,7 @@ export default function Shell({ user, pendingCount, currency, children }) {
       <aside className="brand-panel sticky top-0 z-30 flex flex-col gap-4 px-4 py-4 nav:fixed nav:inset-y-0 nav:left-0 nav:w-64 nav:gap-0 nav:px-4 nav:py-6">
         <div className="flex items-center justify-between gap-3 nav:block">
           <Link href="/" className="flex items-center gap-3">
-            <BrandMark size={34} />
+            <Logo size={34} />
             <span>
               <span className="block text-[15px] font-bold leading-tight tracking-[-0.02em] text-white">
                 UR Binary Hub

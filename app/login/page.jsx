@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import Field from '@/components/Field';
-import { BrandMark } from '@/components/Icons';
+import Logo from '@/components/Logo';
 
 const PROMISES = [
   'Every franc in and out, with the receipt behind it',
@@ -42,7 +42,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-paper nav:grid nav:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
       <section className="brand-panel flex flex-col justify-between px-6 py-10 nav:px-14 nav:py-14">
         <div className="flex items-center gap-3">
-          <BrandMark size={38} />
+          <Logo size={38} />
           <span>
             <span className="block text-[16px] font-bold leading-tight tracking-[-0.02em] text-white">
               UR Binary Hub

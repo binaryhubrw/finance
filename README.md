@@ -39,7 +39,7 @@ first — the scripts read the font files that `next/font` fetched. Edit the mat
 
 | Role | Can do |
 |---|---|
-| `accountant` | Records entries; edits or voids **their own** entries **while still pending**; reads the ledger and reports; exports CSV |
+| `accountant` | Records entries; edits or voids **their own** entries **while still pending**; reads the ledger and reports; exports to Excel |
 | `auditor` | Approves, rejects and voids; reads the full audit trail and the exceptions page; closes months; exports. **Cannot record or edit entries** |
 | `admin` | Everything an auditor can do, plus managing people and budget lines |
 | `viewer` | Read-only |

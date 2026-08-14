@@ -118,6 +118,34 @@ export const CloseIcon = (props) => (
   </Glyph>
 );
 
+export const EyeIcon = (props) => (
+  <Glyph {...props}>
+    <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" />
+    <circle cx="12" cy="12" r="3.1" />
+  </Glyph>
+);
+
+export const ClockIcon = (props) => (
+  <Glyph {...props}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M12 7.5V12l3 1.8" />
+  </Glyph>
+);
+
+export const CheckCircleIcon = (props) => (
+  <Glyph {...props}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M8.2 12.3l2.6 2.5 5-5.4" />
+  </Glyph>
+);
+
+export const CrossCircleIcon = (props) => (
+  <Glyph {...props}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M9.2 9.2l5.6 5.6M14.8 9.2l-5.6 5.6" />
+  </Glyph>
+);
+
 export const BrandMark = ({ size = 32, className = '' }) => (
   <svg viewBox="0 0 32 32" width={size} height={size} aria-hidden="true" className={className}>
     <rect width="32" height="32" rx="9" fill="url(#brand-mark)" />
