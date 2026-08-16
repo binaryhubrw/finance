@@ -5,7 +5,9 @@ import { handler, ok, badRequest } from '@/lib/http';
 import { requireRole } from '@/lib/session';
 import { writeAudit, snapshotOf } from '@/lib/audit';
 import { readSpreadsheet } from '@/lib/xlsx';
+import { saveUpload } from '@/lib/uploads';
 import { reviewImport } from '@/lib/import';
+import { notify, entryRecorded } from '@/lib/email';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -36,6 +38,18 @@ export const POST = handler(async (request) => {
   }
 
   const dryRun = String(form.get('dryRun') ?? 'true') === 'true';
+
+  // One supporting document and one note can cover the whole batch — a bank
+  // statement behind a month of entries, say. Each row keeps its own note too;
+  // the shared one is appended rather than replacing it.
+  const sharedNote = String(form.get('note') ?? '').trim().slice(0, 300);
+  const supporting = form.get('supporting');
+  const hasSupporting =
+    supporting && typeof supporting.arrayBuffer === 'function' && supporting.size > 0;
+
+  // Written only when the import is actually committed. Saving it on every
+  // preview would leave an orphan on disk each time someone looks.
+  const attachment = hasSupporting && !dryRun ? await saveUpload(supporting) : null;
   const buffer = Buffer.from(await file.arrayBuffer());
 
   let grid;
@@ -58,6 +72,8 @@ export const POST = handler(async (request) => {
   const problems = review.rows.filter((row) => !row.ok);
   const summary = {
     filename: file.name ?? 'spreadsheet',
+    supporting: hasSupporting ? { originalName: supporting.name, size: supporting.size } : null,
+    sharedNote,
     total: review.rows.length,
     ready: review.rows.length - problems.length,
     problems: problems.length,
@@ -80,6 +96,8 @@ export const POST = handler(async (request) => {
   const created = await Transaction.insertMany(
     review.rows.map((row) => ({
       ...row.entry,
+      note: [row.entry.note, sharedNote].filter(Boolean).join(' — ').slice(0, 500),
+      attachment: attachment ?? row.entry.attachment ?? null,
       status: 'pending',
       recordedBy: actor.id,
     })),
@@ -95,6 +113,15 @@ export const POST = handler(async (request) => {
       snapshot: snapshotOf(entry),
     });
   }
+
+  notify(async () => {
+    await entryRecorded({
+      entry: created[0],
+      category: categories.find((c) => String(c._id) === String(created[0].category)),
+      recordedBy: actor,
+      count: created.length,
+    });
+  });
 
   return ok({ ...summary, imported: created.length, dryRun: false }, 201);
 });

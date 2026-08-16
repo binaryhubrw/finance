@@ -1,6 +1,7 @@
 import User from '@/models/User';
 import { handler, ok, badRequest, readBody } from '@/lib/http';
 import { requireUser } from '@/lib/session';
+import { notify, passwordChanged } from '@/lib/email';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -30,6 +31,10 @@ export const POST = handler(async (request) => {
 
   await user.setPassword(String(newPassword));
   await user.save();
+
+  notify(async () => {
+    await passwordChanged({ person: { name: user.name, email: user.email } });
+  });
 
   return ok({ changed: true });
 });

@@ -11,12 +11,16 @@ export default function ImportDialog({ open, onClose, categories }) {
   const input = useRef(null);
   const [state, setState] = useState({ status: 'idle' });
   const [file, setFile] = useState(null);
+  const [supporting, setSupporting] = useState(null);
+  const [note, setNote] = useState('');
 
   const active = categories.filter((category) => category.active);
 
   const reset = () => {
     setState({ status: 'idle' });
     setFile(null);
+    setSupporting(null);
+    setNote('');
     if (input.current) input.current.value = '';
   };
 
@@ -30,6 +34,8 @@ export default function ImportDialog({ open, onClose, categories }) {
     const body = new FormData();
     body.append('file', chosen);
     body.append('dryRun', String(dryRun));
+    if (supporting) body.append('supporting', supporting);
+    if (note.trim()) body.append('note', note.trim());
 
     const response = await fetch('/api/transactions/import', { method: 'POST', body });
     const data = await response.json().catch(() => ({}));
@@ -83,7 +89,7 @@ export default function ImportDialog({ open, onClose, categories }) {
             from {state.result.filename}.
           </p>
           <p className="mt-2 text-[13px] text-ink-soft">
-            They are waiting for an auditor. None of them counts towards the balance yet.
+            They are waiting for an approver. None of them counts towards the balance yet.
           </p>
           <div className="mt-5 flex gap-2">
             <button type="button" className="btn btn-primary" onClick={close}>
@@ -172,6 +178,11 @@ export default function ImportDialog({ open, onClose, categories }) {
             <div className="mt-4">
               <p className="text-[13px]">
                 {result.total} {result.total === 1 ? 'row' : 'rows'} read from {result.filename}.{' '}
+                {supporting ? (
+                  <span className="text-ink-soft">
+                    {supporting.name} will be attached to each of them.{' '}
+                  </span>
+                ) : null}
                 {ready ? (
                   <span className="text-credit">All of them are ready to import.</span>
                 ) : (
@@ -180,6 +191,42 @@ export default function ImportDialog({ open, onClose, categories }) {
                   </span>
                 )}
               </p>
+
+          <div className="mt-4 grid gap-4 border-t border-rule pt-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="import-supporting" className="label mb-1.5 block">
+                Supporting document
+              </label>
+              <input
+                id="import-supporting"
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,application/pdf,image/*"
+                onChange={(event) => setSupporting(event.target.files?.[0] ?? null)}
+                className="field file:mr-3 file:rounded-sm file:border file:border-rule-strong file:bg-surface file:px-2 file:py-1 file:text-[12px]"
+              />
+              <p className="mt-1 text-[12px] text-ink-soft">
+                Optional. One file — a bank statement, say — attached to every entry in this
+                batch.
+              </p>
+            </div>
+
+            <div>
+              <label htmlFor="import-note" className="label mb-1.5 block">
+                Note for every entry
+              </label>
+              <input
+                id="import-note"
+                className="field"
+                maxLength={300}
+                value={note}
+                placeholder="Imported from the July bank statement"
+                onChange={(event) => setNote(event.target.value)}
+              />
+              <p className="mt-1 text-[12px] text-ink-soft">
+                Optional. Added to each row&rsquo;s own note rather than replacing it.
+              </p>
+            </div>
+          </div>
 
               <div className="mt-3 max-h-72 overflow-auto rounded-sm border border-rule">
                 <table className="t">

@@ -32,6 +32,20 @@ const transactionSchema = new mongoose.Schema(
       min: [0.01, 'The amount must be greater than zero.'],
       set: round2,
     },
+    // Named amounts folded into `amount`, such as delivery or a bank charge.
+    // `amount` always stays the total, so every balance, report and export
+    // keeps working without knowing this field exists. The base amount is
+    // whatever is left once these are subtracted.
+    extras: {
+      type: [
+        {
+          _id: false,
+          label: { type: String, required: true, trim: true, maxlength: 120 },
+          amount: { type: Number, required: true, min: 0.01, set: round2 },
+        },
+      ],
+      default: undefined,
+    },
     method: { type: String, enum: METHODS, default: 'cash' },
     reference: { type: String, trim: true, maxlength: 120, default: '' },
     receiptUrl: { type: String, trim: true, maxlength: 500, default: '' },

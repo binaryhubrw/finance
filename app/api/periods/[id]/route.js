@@ -3,6 +3,7 @@ import { handler, ok, notFound } from '@/lib/http';
 import { requireRole } from '@/lib/session';
 import { monthLabel } from '@/lib/period';
 import { writeAudit, snapshotOf } from '@/lib/audit';
+import { notify, periodChanged } from '@/lib/email';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -25,6 +26,10 @@ export const DELETE = handler(async (_request, { params }) => {
     actor,
     summary: `Reopened ${label}`,
     snapshot,
+  });
+
+  notify(async () => {
+    await periodChanged({ year: period.year, month: period.month, action: 'reopen', actor });
   });
 
   return ok({ reopened: true, label });

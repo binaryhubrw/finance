@@ -1,7 +1,7 @@
 # UR Binary Hub — Finance
 
 A cashbook for a coworking and innovation hub in Kigali. The accountant records every franc
-in and out, with a date, budget line, payment method and receipt reference. The auditor
+in and out, with a date, budget line, payment method and receipt reference. The approver
 approves the spending before it counts, and can later see exactly what was entered, what
 changed and what is missing.
 
@@ -20,7 +20,7 @@ Amounts are in **RWF** (set with `CURRENCY`).
 ## Documentation
 
 This README is for whoever runs the system. The two documents below are for the people who
-use it, and are worth handing to a new accountant or auditor on their first day.
+use it, and are worth handing to a new accountant or approver on their first day.
 
 | Document | Covers |
 |---|---|
@@ -37,24 +37,28 @@ first — the scripts read the font files that `next/font` fetched. Edit the mat
 
 ## Who does what
 
-| Role | Can do |
-|---|---|
-| `accountant` | Records entries; edits or voids **their own** entries **while still pending**; reads the ledger and reports; exports to Excel |
-| `auditor` | Approves, rejects and voids; reads the full audit trail and the exceptions page; closes months; exports. **Cannot record or edit entries** |
-| `admin` | Everything an auditor can do, plus managing people and budget lines |
-| `viewer` | Read-only |
+The stored role keys and the names people see are deliberately not the same. The keys are what
+`requireRole()` checks and what sits in the database; renaming them would mean migrating every
+existing user, so only the labels in `ROLE_LABELS` changed.
+
+| Key in code and database | Shown in the interface | Can do |
+|---|---|---|
+| `accountant` | Accountant | Records entries; edits or voids **their own** entries **while still pending**; reads the ledger and reports; exports to Excel |
+| `auditor` | **Approver** | Approves, rejects and voids; reads the full audit trail and the exceptions page; closes months; exports. **Cannot record or edit entries** |
+| `admin` | Administrator | Everything an approver can do, plus managing people and budget lines |
+| `viewer` | **Auditor** | Read-only: the ledger, reports, the audit trail and the exceptions page |
 
 Separation of duties is enforced in the route handlers, not in the interface:
 
 - **Nobody approves their own entry.** If the entry's `recordedBy` is the signed-in user, the
   approve and reject routes return 403. Set `ALLOW_SELF_APPROVAL=true` only if one person
   really does have to do both jobs.
-- The `auditor` role is deliberately blocked from `POST /api/transactions` and
+- The `approver` role is deliberately blocked from `POST /api/transactions` and
   `PATCH /api/transactions/[id]`.
 - The interface hides buttons a role cannot use, but every route checks again.
 
 The Settings page is where budget lines, people and the monthly close live. Administrators
-see all of it; auditors see the monthly close, because closing months is their job; everyone
+see all of it; approvers see the monthly close, because closing months is their job; everyone
 can reach it to change their own password.
 
 ---
@@ -101,7 +105,7 @@ then change that password from Settings.
 
 `npm run seed` is safe to run repeatedly. It adds any missing budget lines, creates the
 administrator if that email is not already registered, and never overwrites an existing
-password. `npm run seed -- --demo` also creates an accountant and an auditor and fills the
+password. `npm run seed -- --demo` also creates an accountant and an approver and fills the
 book with about forty entries across the last three months, including a few that trip the
 exception checks, so every screen has something in it.
 
@@ -172,20 +176,76 @@ line that matches the direction, and a month that is still open — and the resu
 table before anything is saved. **A sheet with any bad row imports nothing**: a half-imported
 cashbook is harder to unpick than a rejected file. Up to 500 rows and 2MB at a time.
 
-Imported entries land as `pending` like any other, so the auditor still approves them one by
+Imported entries land as `pending` like any other, so the approver still approves them one by
 one, and each one gets its own audit row noting the file it came from.
 
 The reader is in `lib/xlsx.js` — an `.xlsx` is a ZIP of XML parts, and Node can already
 inflate and parse both, so it stays a dependency-free file rather than pulling in a library.
 It reads values only; formatting, formulas and charts are ignored.
 
+## Email notifications
+
+Two layers, following the INUMA integration guide: [lib/mailer.js](lib/mailer.js) is the
+transport and knows nothing about the ledger; [lib/email.js](lib/email.js) holds the templates
+and one function per event and knows nothing about SMTP. Swapping to another provider means
+replacing `mailer.js` alone, as long as it still exports `sendEmail` / `verifyMailer` /
+`closeMailer`.
+
+**The settings are built into the code, not read from the environment**, because production
+runs from an image where nobody can add variables. The defaults live in
+[lib/mailer.js](lib/mailer.js) (relay `10.20.61.125`, From `urbinaryhub@ur.ac.rw`) and
+[lib/app-url.js](lib/app-url.js) (`https://finance.urbinaryhub.rw`, which every link in every
+email is built from).
+
+Nothing secret is being committed: the relay has no username or password, its address is an
+internal one that is useless from outside UR, and the From is a public mailbox.
+
+Each can still be overridden by an environment variable where one can be set:
+
+```bash
+UR_SMTP_HOST=…        UR_SMTP_PORT=25       # port defaults to 25
+UR_MAIL_FROM=…        UR_MAIL_FROM_NAME=…
+FRONTEND_URL=…        # overrides the built-in link origin
+```
+
+The relay has **no username or password** — it accepts mail from trusted internal addresses,
+so the transporter authenticates by where it runs. On a host outside that range every send
+fails with a 5xx. Check with `nc -zv $UR_SMTP_HOST 25`, then `npm run verify:email`.
+
+Because the relay is built in, a developer machine will try to reach it and fail with
+`Connection timeout` — harmless, logged, and nothing else is affected. To see the messages
+locally, point the app at a capture server with `UR_SMTP_HOST=127.0.0.1 UR_SMTP_PORT=2525`.
+
+| Event | Who is told |
+|---|---|
+| Entry recorded, imported or batch-recorded | Approvers and administrators, except whoever recorded it |
+| Entry edited after review, so back in the queue | Approvers and administrators, except the editor |
+| Entry approved, rejected or voided | Whoever recorded it, with the reviewer's comment |
+| Comment left on an entry | The recorder and the reviewer, except the commenter |
+| Month closed or reopened | Approvers and administrators, except whoever did it |
+| Account created | The new person — never with the password, which is handed over directly |
+| Role changed, account deactivated or restored, password reset by an admin | That person |
+| Own password changed | That person, as a security confirmation |
+
+Two rules hold everywhere:
+
+- **A failed email never fails the operation.** Sends go through `notify()`, which catches
+  everything and logs `[email] notification failed: …`. Verified by killing the relay
+  mid-flight: the entry still saved, `201` in 1.8s.
+- **`notify()` does not block the response.** An approval must not wait on a relay that hangs
+  for ten seconds. The consequence is that on a platform which freezes the process the moment
+  a response is returned, in-flight sends would be cut short. The Docker deployment is a
+  long-running server, so they complete; the same caveat as the in-process login rate limit.
+
+---
+
 ## The monthly routine
 
 1. The **accountant** records entries as the money moves, with a receipt reference or a link
    to a photo of the receipt on every expense.
-2. The **auditor** clears the approval queue — ideally daily, at worst weekly. Nothing counts
+2. The **approver** clears the approval queue — ideally daily, at worst weekly. Nothing counts
    towards the balance until they do.
-3. The auditor works through **Exceptions**: expenses with no receipt, entries edited after
+3. The approver works through **Exceptions**: expenses with no receipt, entries edited after
    review, large amounts, backdated entries, possible duplicates, and anything that has been
    waiting more than a week.
 4. Reconcile the book against the **bank statement and the mobile money statement**, and

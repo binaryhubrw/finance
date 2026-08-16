@@ -118,6 +118,20 @@ export const CloseIcon = (props) => (
   </Glyph>
 );
 
+export const StackIcon = (props) => (
+  <Glyph {...props}>
+    <path d="M12 3.5l8.5 4.2-8.5 4.2-8.5-4.2z" />
+    <path d="M3.5 12.2l8.5 4.2 8.5-4.2" />
+    <path d="M3.5 16.4l8.5 4.1 8.5-4.1" />
+  </Glyph>
+);
+
+export const CommentIcon = (props) => (
+  <Glyph {...props}>
+    <path d="M20.5 12.5c0 3.6-3.8 6.5-8.5 6.5a10 10 0 0 1-2.6-.33L4.5 20.5l1.4-3.7A6.9 6.9 0 0 1 3.5 12.5C3.5 8.9 7.3 6 12 6s8.5 2.9 8.5 6.5z" />
+  </Glyph>
+);
+
 export const EyeIcon = (props) => (
   <Glyph {...props}>
     <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" />

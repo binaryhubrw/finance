@@ -59,7 +59,7 @@ export default function LoginPage() {
             The hub&rsquo;s money, accounted for.
           </h1>
           <p className="mt-4 text-[14px] leading-relaxed text-white/70">
-            The accountant records the day. The auditor approves it. Nothing counts towards the
+            The accountant records the day. The approver clears it. Nothing counts towards the
             balance until it has been reviewed.
           </p>
 

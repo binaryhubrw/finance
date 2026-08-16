@@ -13,55 +13,50 @@ export default function Shell({ user, pendingCount, currency, children }) {
 
   return (
     <div className="min-h-screen">
+      {/* The sidebar carries the brand and the sections. Who you are signed in
+          as, and how to stop being signed in, live in the header instead. */}
       <aside className="brand-panel sticky top-0 z-30 flex flex-col gap-4 px-4 py-4 nav:fixed nav:inset-y-0 nav:left-0 nav:w-64 nav:gap-0 nav:px-4 nav:py-6">
-        <div className="flex items-center justify-between gap-3 nav:block">
-          <Link href="/" className="flex items-center gap-3">
-            <Logo size={34} />
-            <span>
-              <span className="block text-[15px] font-bold leading-tight tracking-[-0.02em] text-white">
-                UR Binary Hub
-              </span>
-              <span className="block text-[11px] text-white/60">Finance · {currency}</span>
+        <Link href="/" className="flex items-center gap-3">
+          <Logo size={34} />
+          <span>
+            <span className="block text-[15px] font-bold leading-tight tracking-[-0.02em] text-white">
+              UR Binary Hub
             </span>
-          </Link>
-          <div className="nav:hidden">
-            <SignOutButton compact />
-          </div>
-        </div>
+            <span className="block text-[11px] text-white/60">Finance · {currency}</span>
+          </span>
+        </Link>
 
         <nav className="nav:mt-8" aria-label="Sections">
           <NavLinks role={user.role} pendingCount={pendingCount} />
         </nav>
-
-        <div className="mt-auto hidden nav:block">
-          <div className="rounded-lg border border-white/12 bg-white/8 px-3 py-3">
-            <div className="flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#37d0c4] text-[11px] font-bold text-[#04302c]">
-                {initials}
-              </span>
-              <span className="min-w-0">
-                <span className="block truncate text-[13px] font-medium text-white">
-                  {user.name}
-                </span>
-                <span className="block text-[11px] text-white/60">
-                  {ROLE_LABELS[user.role] ?? user.role}
-                </span>
-              </span>
-            </div>
-            <div className="mt-2.5 flex items-center gap-2 border-t border-white/12 pt-2.5">
-              <Link
-                href="/settings"
-                className="rounded-md px-2 py-1 text-[12px] font-medium text-white/65 transition-colors duration-140 hover:bg-white/10 hover:text-white"
-              >
-                Password
-              </Link>
-              <SignOutButton />
-            </div>
-          </div>
-        </div>
       </aside>
 
       <div className="shell-main">
+        <header className="border-b border-rule bg-surface nav:sticky nav:top-0 nav:z-20">
+          <div className="mx-auto flex w-full max-w-[1240px] items-center justify-end gap-1 px-4 py-2 nav:px-10">
+            <Link
+              href="/settings"
+              className="flex min-w-0 items-center gap-2.5 rounded-md px-2 py-1 transition-colors duration-140 hover:bg-sunk"
+            >
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal-soft text-[11px] font-bold text-teal-deep">
+                {initials}
+              </span>
+              <span className="min-w-0 text-left">
+                <span className="block truncate text-[13px] font-medium text-ink">
+                  {user.name}
+                </span>
+                <span className="block text-[11px] text-muted">
+                  {ROLE_LABELS[user.role] ?? user.role}
+                </span>
+              </span>
+            </Link>
+
+            <span className="mx-1 hidden h-6 w-px bg-rule sm:block" aria-hidden="true" />
+
+            <SignOutButton tone="bar" />
+          </div>
+        </header>
+
         <main className="mx-auto w-full max-w-[1240px] px-4 py-7 nav:px-10 nav:py-10">
           {children}
         </main>

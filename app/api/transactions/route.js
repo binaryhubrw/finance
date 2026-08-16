@@ -5,8 +5,10 @@ import { handler, ok, badRequest, searchParams, readBody } from '@/lib/http';
 import { requireUser, requireRole } from '@/lib/session';
 import { assertPeriodOpen } from '@/lib/period';
 import { verifyStored } from '@/lib/uploads';
+import { foldExtras } from '@/lib/extras';
 import { writeAudit, snapshotOf, plain } from '@/lib/audit';
 import { listTransactions, readParams, startOfDay } from '@/lib/queries';
+import { notify, entryRecorded } from '@/lib/email';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -33,10 +35,10 @@ export const POST = handler(async (request) => {
   }
   if (!TYPES.includes(body.type)) details.type = 'Say whether money came in or went out.';
 
-  const amount = Number(body.amount);
-  if (!Number.isFinite(amount) || amount < 0.01) {
-    details.amount = 'Enter an amount greater than zero.';
-  }
+  // `amount` arrives as the base; the stored amount is base plus the extras.
+  const folded = foldExtras(body.amount, body.extras);
+  if (folded.error) details.amount = folded.error;
+  const amount = folded.total;
   if (body.method && !METHODS.includes(body.method)) {
     details.method = 'Choose one of the payment methods.';
   }
@@ -69,6 +71,7 @@ export const POST = handler(async (request) => {
     category: category._id,
     type: body.type,
     amount,
+    extras: folded.extras,
     method: body.method ?? 'cash',
     reference: String(body.reference ?? '').trim(),
     receiptUrl: String(body.receiptUrl ?? '').trim(),
@@ -86,6 +89,10 @@ export const POST = handler(async (request) => {
     actor,
     summary: `Recorded ${body.type === 'in' ? 'money in' : 'money out'} of ${amount.toLocaleString('en-US')} for “${entry.description}”`,
     snapshot: snapshotOf(entry),
+  });
+
+  notify(async () => {
+    await entryRecorded({ entry, category, recordedBy: actor });
   });
 
   return ok({ transaction: plain(entry.toObject()) }, 201);

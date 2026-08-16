@@ -19,7 +19,7 @@ export default async function AuditPage({ searchParams }) {
     return (
       <div className="card px-5 py-8">
         <p className="eyebrow">Audit trail</p>
-        <h1 className="page-title mt-1">This section is for the auditor</h1>
+        <h1 className="page-title mt-1">This section is for reviewers</h1>
         <p className="mt-2 text-[13px] text-ink-soft">
           The trail records what you enter, so it is read by the people who review your work. Your
           own entries and their history are on the ledger.

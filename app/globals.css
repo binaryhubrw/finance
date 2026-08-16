@@ -318,7 +318,12 @@
      of floating stat cards. */
   .tab-strip {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  /* Four across is too tight on a phone; two rows of two still compare well. */
+  @media (max-width: 42rem) {
+    .tab-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .tab:nth-child(2n) { border-right: 0; }
   }
 
   .tab {
@@ -359,6 +364,9 @@
   }
   .tab[aria-current='page']::before { background: var(--tab-accent); }
 
+  /* The "all" tab takes the brand blue, leaving green, red and amber to keep
+     meaning what they mean everywhere else. */
+  .tab-all      { --tab-accent: var(--color-accent); --tab-ink: var(--color-accent-deep); }
   .tab-pending  { --tab-accent: var(--color-flag);   --tab-ink: var(--color-flag-deep); }
   .tab-approved { --tab-accent: var(--color-credit); --tab-ink: var(--color-credit-deep); }
   .tab-rejected { --tab-accent: var(--color-debit);  --tab-ink: var(--color-debit-deep); }
@@ -391,6 +399,14 @@
     opacity: 0.72;
   }
   .tab[aria-current='page'] .tab-share > span { opacity: 1; }
+
+  /* On the "all" tab the bar is a breakdown rather than a proportion. */
+  .tab-share-split { display: flex; background: var(--color-rule); }
+  .tab-share-split > span { border-radius: 0; opacity: 0.75; }
+  .tab[aria-current='page'] .tab-share-split > span { opacity: 1; }
+  .seg-pending  { background: var(--color-flag); }
+  .seg-approved { background: var(--color-credit); }
+  .seg-rejected { background: var(--color-debit); }
 
   @media (max-width: 30rem) {
     .tab { padding: 12px 10px; }

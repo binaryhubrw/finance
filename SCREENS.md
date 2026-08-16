@@ -5,8 +5,8 @@ look-it-up companion to [MANUAL.md](MANUAL.md), which explains *why* the system 
 way it does. If you want to understand the rules, read the manual. If you want to know what
 a particular button does, you are in the right place.
 
-**Roles are abbreviated throughout:** ACC accountant · AUD auditor · ADM administrator ·
-VIE viewer.
+**Roles are abbreviated throughout:** ACC accountant · APR approver · ADM administrator ·
+AUD auditor.
 
 ---
 
@@ -57,16 +57,26 @@ top under 860px wide.
 | **Overview** | The month at a glance. | All |
 | **Ledger** | The cashbook. | All |
 | **Approvals** | The review queue. The badge counts entries waiting. | All |
-| **Audit trail** | Every logged action. | AUD ADM VIE |
-| **Exceptions** | The six checks. | AUD ADM VIE |
+| **Audit trail** | Every logged action. | APR ADM AUD |
+| **Exceptions** | The six checks. | APR ADM AUD |
 | **Reports** | Totals over a date range. | All |
-| **Settings** | Budget lines, people, month close. | AUD ADM |
-| **Your name and role** (bottom) | Not a control — it confirms who you are signed in as. | All |
-| **Password** | Jumps to Settings → Your account. This is how an accountant or viewer reaches Settings at all. | All |
-| **Sign out** | Ends the session and returns to Sign in. | All |
-
+| **Settings** | Budget lines, people, month close. | APR ADM |
 Accountants do not see Audit trail or Exceptions. Both are reviewer screens, and hiding
 them keeps the accountant's sidebar to the work they actually do.
+
+---
+
+## The header
+
+A slim bar across the top of every screen, holding the account rather than the navigation.
+
+| Control | What it does | Who sees it |
+|---|---|---|
+| **Your initials, name and role** | Confirms who you are signed in as, and opens Settings → Your account. This is how an accountant or auditor reaches Settings at all. | All |
+| **Sign out** | Ends the session and returns to Sign in. | All |
+
+On a desktop the bar stays put as the page scrolls. Below 860px the sidebar becomes a row of
+links across the top and the header sits directly beneath it.
 
 ---
 
@@ -112,7 +122,7 @@ any dropdown applies immediately; the search box needs **Find** or the Enter key
 | **Budget line** | Narrows to one line. Lists every line, active or not. | All |
 | **Method** | Cash, Mobile money, Bank, Other. | All |
 | **Status** | Pending, Approved, Rejected, Void. | All |
-| **Recorded by** | Narrows to one person. | AUD ADM VIE |
+| **Recorded by** | Narrows to one person. | APR ADM AUD |
 | **Search** | Matches the description, payee, reference and note. | All |
 | **Find** | Runs the search. | All |
 | **Clear filters** | Appears once something beyond the dates is set. Resets everything except the date range. | All |
@@ -134,7 +144,7 @@ balance over a filtered selection would be arithmetic that means nothing.
 | Column | What it holds |
 |---|---|
 | **Date** | The date the money moved. An amber bar on this edge means pending. Rows read newest first. |
-| **Description** | What the entry is for, with payee · reference · budget line beneath. A voided, rejected or commented-on approved entry shows its note here, an edited one is marked "Edited after review", and a **Preview** button appears when a receipt file is attached. |
+| **Description** | What the entry is for, with payee · reference · budget line beneath. A voided, rejected or commented-on approved entry shows its note here, an edited one is marked "Edited after review", and **Preview** (when a receipt is attached) and **Comment** buttons sit beneath. |
 | **Method** | Cash, mobile money, bank or other. |
 | **Status** | The badge. |
 | **Money in** | Green, filled only for money in. |
@@ -162,13 +172,14 @@ description. ACC and ADM only.
 | **Date** | Defaults to today. Future dates are refused by the picker itself. |
 | **Direction** | Two buttons — **Money in** and **Money out**. Switching them clears the budget line, because the list of lines depends on the direction. |
 | **Amount** | Greater than zero. Two decimal places allowed. |
+| **Add a charge to this amount** | Adds a named amount — delivery, a bank charge, VAT — that folds into the total. Each has a name and an amount, up to ten per entry, and a running **Total recorded** shows what will actually be saved. Record 1,000 with a 200 charge and the entry is 1,200. |
 | **Budget line** | Only lines matching the direction appear: income lines for money in, expense lines for money out. Starts as "Choose a line". |
-| **Description** | Required, up to 300 characters. This is what the auditor reads first. |
+| **Description** | Required, up to 300 characters. This is what the approver reads first. |
 | **Paid to** / **Received from** | The label follows the direction. |
 | **Method** | Cash, Mobile money, Bank, Other. Defaults to Cash. |
 | **Reference** | Receipt number or mobile money transaction ID. |
 | **Receipt link** | A URL to a photo of the receipt. The system stores the link, not the image. |
-| **Note** | Up to 500 characters, for anything the auditor should know. |
+| **Note** | Up to 500 characters, for anything the approver should know. |
 
 | Control | What it does |
 |---|---|
@@ -177,7 +188,7 @@ description. ACC and ADM only.
 | **Void this entry** | Only on an existing entry. Opens a reason box; **Void this entry** confirms, **Keep it** backs out. A reason is required. |
 
 The dialog tells you what will happen before you commit: a new entry says it waits for an
-auditor, and an edit says that changing a reviewed entry sends it back to the queue.
+approver, and an edit says that changing a reviewed entry sends it back to the queue.
 
 Leave the reference and receipt link empty on an expense and the entry is flagged under
 Exceptions. It still saves — this is a prompt, not a block.
@@ -190,7 +201,9 @@ Opened by **Import a sheet** on the Ledger. ACC and ADM only.
 
 | Control | What it does |
 |---|---|
-| **Download template** | Downloads an `.xlsx` workbook: an **Entries** sheet with the right headings and two example rows, and a **Budget lines** sheet listing every line so the names can be copied rather than retyped. |
+| **Download template** | Downloads an `.xlsx` workbook. The **Entries** sheet has the right headings, two example rows, and **dropdowns** on Direction, Budget line and Method, so the fields that have to match are picked rather than typed. A **Lists** sheet holds the budget lines the dropdown points at. |
+| **Supporting document** | Appears once the sheet has been read, alongside the preview. Optional: one file — a bank statement, say — attached to every entry in the batch. It is stored once and shared by all of them, and only written when you confirm the import. |
+| **Note for every entry** | Appears with the preview. Optional, and added to each row's own note rather than replacing it. |
 | **Columns** (list) | Every column the importer understands, which are required, and the format each expects. |
 | **Budget lines in use** (list) | Every active line with its direction. Names in the sheet must match these. |
 | **Spreadsheet** (file picker) | Accepts `.xlsx` and `.csv`, up to 2MB and 500 rows. Choosing a file immediately checks it — nothing is saved. |
@@ -208,14 +221,23 @@ own audit entry naming the file it came from.
 
 ## Approvals
 
-The review queue. Everyone can see it; only AUD and ADM can act.
+The review queue. Everyone can see it; only APR and ADM can act.
 
 ### The three status tabs
 
-Three tabs run across the top, each carrying its own colour: **Pending** (amber),
-**Approved** (green) and **Rejected** (red). They are both a summary and the filter for the
-table underneath — the selected one loses its bottom rule and shares a surface with the
-table, so the two read as one object.
+Four tabs run across the top: **All** (brand blue), then **Pending** (amber), **Approved**
+(green) and **Rejected** (red). They are both a summary and the filter for the table
+underneath — the selected one loses its bottom rule and shares a surface with the table, so
+the two read as one object.
+
+The screen still opens on **Pending**, because that is the work queue and the sidebar badge
+counts it. **All** shows the three states together, newest first, with a status badge on
+every row; its bar is a three-part breakdown rather than a percentage, and its last column
+reads **Review** — pending rows keep their Approve and Reject buttons, settled rows show who
+decided and why.
+
+**All** does not include voided entries. A void is a cancellation rather than a review
+decision, and voided entries live in the Ledger.
 
 | On each tab | What it shows |
 |---|---|
@@ -244,16 +266,17 @@ budget line, method, payee and reference, plus the note and receipt link when pr
 | Control | What it does | Who sees it |
 |---|---|---|
 | **Preview** | Opens the entry's receipt file in a panel, without leaving the table. Only shown when a file is attached; an expense with none says *"No receipt to check"* in its place. | All |
-| **Approve** | Opens the approval box, which carries an **optional** comment. | AUD ADM |
-| **Reject** | Opens the rejection box, which requires a **reason**. | AUD ADM |
-| **Cancel** / **Approve entry** / **Reject entry** | Back out, or confirm. **Reject entry** stays disabled until a reason is typed; **Approve entry** is available straight away. | AUD ADM |
+| **Comment** / **Comments N** | Opens the entry's remarks and a box to add one. Everyone who can see the entry can post, the read-only Auditor included. Comments cannot be edited or removed, and each appears in the audit trail. | All |
+| **Approve** | Opens the approval box, which carries an **optional** comment. | APR ADM |
+| **Reject** | Opens the rejection box, which requires a **reason**. | APR ADM |
+| **Cancel** / **Approve entry** / **Reject entry** | Back out, or confirm. **Reject entry** stays disabled until a reason is typed; **Approve entry** is available straight away. | APR ADM |
 
 Every tab reads newest first. Approved and rejected show who made the decision and when,
 along with the comment either decision carried. Both settled lists show the newest 50, with a link into the ledger
 when there are more.
 
 If you recorded the entry yourself, the buttons are replaced by *"You recorded this one, so
-another reviewer has to clear it."* Accountants and viewers see *"An auditor reviews this
+another reviewer has to clear it."* Accountants and auditors see *"An approver reviews this
 one."*
 
 Empty queue: *"Nothing waiting. The accountant is up to date."*
@@ -264,7 +287,7 @@ Voiding is not on this screen. Open the entry from the Ledger to void it.
 
 ## Audit trail
 
-Every logged action, newest first. AUD, ADM and VIE. Read-only, for everyone.
+Every logged action, newest first. APR, ADM and AUD. Read-only, for everyone.
 
 | Control | What it does |
 |---|---|
@@ -287,7 +310,7 @@ Nothing matching: *"No actions match these filters."*
 
 ## Exceptions
 
-Six checks over the book. AUD, ADM and VIE. An accountant who reaches this address sees a
+Six checks over the book. APR, ADM and AUD. An accountant who reaches this address sees a
 short note explaining that it is a reviewer's screen.
 
 Each section is a collapsible panel. Sections with something in them open automatically;
@@ -346,8 +369,8 @@ closing balance for the same range.
 
 ## Settings
 
-Reachable from the sidebar by AUD and ADM, and from the **Password** link by anyone. What
-you see depends on your role.
+Reachable from the sidebar by APR and ADM, and by anyone through the profile chip in the
+header. What you see depends on your role.
 
 ### Your account — everyone
 
@@ -387,7 +410,7 @@ The table also shows each person's email and when they last signed in. You canno
 your own role or deactivate yourself — that is what stops the last administrator locking
 everyone out.
 
-### Close a month — AUD and ADM
+### Close a month — APR and ADM
 
 | Control | What it does |
 |---|---|

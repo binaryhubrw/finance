@@ -1,6 +1,6 @@
 # UR Binary Hub Finance — User Manual
 
-For everyone who uses the system: accountants, auditors, administrators and viewers.
+For everyone who uses the system: accountants, approvers, administrators and auditors.
 No technical knowledge assumed. If you are setting the system up on a server instead,
 read [README.md](README.md).
 
@@ -32,18 +32,18 @@ Your role decides what you can do. An administrator sets it when your account is
 | Role | What it is for | Can do |
 |---|---|---|
 | **Accountant** | The person who handles the money day to day | Records entries. Edits or cancels **their own** entries, but only while still pending. Views the ledger and reports. Exports to Excel. |
-| **Auditor** | The person who checks the accountant's work | Approves, rejects and voids entries. Reads the audit trail and exceptions. Closes months. Exports. **Cannot record or edit entries.** |
-| **Administrator** | The person who runs the system | Everything an auditor can do, plus manages people and budget lines. |
-| **Viewer** | Anyone who needs to see the numbers | Reads the ledger and reports. Changes nothing. |
+| **Approver** | The person who checks the accountant's work | Approves, rejects and voids entries. Reads the audit trail and exceptions. Closes months. Exports. **Cannot record or edit entries.** |
+| **Administrator** | The person who runs the system | Everything an approver can do, plus manages people and budget lines. |
+| **Auditor** | Anyone who checks the books without touching them | Reads the ledger, the reports, the audit trail and the exceptions page. Can leave comments on entries. Changes nothing else. |
 
-**An auditor cannot record entries, and this is deliberate.** If the same person could both
+**An approver cannot record entries, and this is deliberate.** If the same person could both
 write an entry and approve it, the check would be worthless. The system enforces this on the
 server, not just by hiding buttons — the answer is the same whoever asks.
 
 For the same reason, **nobody can approve an entry they recorded themselves**, even an
 administrator. If you try, you get:
 
-> You recorded this entry, so someone else has to approve it. Ask another auditor to review it.
+> You recorded this entry, so someone else has to approve it. Ask another approver to review it.
 
 ---
 
@@ -53,7 +53,7 @@ Learn these and the rest of the system explains itself.
 
 ### 1. Approval gates the balance
 A new entry is **pending**. It appears in the ledger and you can see it, but it does not move
-the running balance and does not appear in reports. Only after an auditor approves it does it
+the running balance and does not appear in reports. Only after an approver approves it does it
 count. This is why the balance column shows a small dash, not a number, next to a pending row.
 
 ### 2. Nothing is ever deleted
@@ -65,10 +65,10 @@ shown beside it. The record of the mistake is part of the record.
 If an approved or rejected entry is edited, the earlier decision no longer applies to what the
 entry now says. So the entry goes **back to pending**, the reviewer is cleared, and it is
 flagged as edited. It reappears in the approvals queue marked "re-submitted after edit". The
-auditor is told what changed.
+approver is told what changed.
 
 ### 4. Closed months are frozen
-At the end of a month, an auditor closes it. After that, nothing dated inside that month can be
+At the end of a month, an approver closes it. After that, nothing dated inside that month can be
 created, edited, voided or approved:
 
 > March 2026 is closed. Record the correction in an open month instead.
@@ -86,11 +86,11 @@ changed. The trail is append-only. Nobody can edit or delete it, including admin
 
 ```
                         ┌──────────────────────────┐
-   Accountant           │                          │  Auditor approves
+   Accountant           │                          │  Approver approves
    records  ──────────► │        PENDING           │ ─────────────────► APPROVED
                         │  (in the book, but the   │                    counts towards
                         │   balance ignores it)    │ ─────────────────► REJECTED
-                        │                          │  Auditor rejects   with a reason
+                        │                          │  Approver rejects   with a reason
                         └──────────────────────────┘
                                     ▲                       │
                                     │                       │
@@ -99,7 +99,7 @@ changed. The trail is append-only. Nobody can edit or delete it, including admin
                                      to pending, flagged
 
    Any entry, at any point ──────────────────────────────────► VOID
-                                  Auditor voids it,           stays visible,
+                                  Approver voids it,           stays visible,
                                   with a reason               struck through
 ```
 
@@ -140,7 +140,11 @@ across the top. You only see the screens your role can use.
 | **Audit trail** | Everything that has happened *(hidden from accountants)* |
 | **Exceptions** | What to look at twice *(hidden from accountants)* |
 | **Reports** | Totals over any date range |
-| **Settings** | Budget lines, people, closing months *(auditors and administrators)* |
+| **Settings** | Budget lines, people, closing months *(approvers and administrators)* |
+
+Your name and role sit in the slim bar across the top of every screen, alongside **Sign out**.
+Clicking your name opens Settings → Your account, which is how an accountant or auditor changes
+their own password.
 
 ---
 
@@ -202,18 +206,19 @@ amounts already formatted and totals at the foot.
 | **Date** | The day the money actually moved, not the day you are typing. Future dates are refused. |
 | **Direction** | Money in or money out. |
 | **Amount** | Digits only. |
+| **Additional charges** | Press **Add a charge to this amount** for anything that belongs on top — delivery, a bank charge, VAT. Give each one a name and an amount; the dialog shows the running total, and that total is what gets recorded. A 1,000 payment with 200 of charges is saved as 1,200, with the breakdown kept so anyone can see where it came from. |
 | **Budget line** | The list narrows to lines matching the direction — income lines for money in, expense lines for money out. |
-| **Description** | What it was for, in plain words. This is what the auditor reads. |
+| **Description** | What it was for, in plain words. This is what the approver reads. |
 | **Paid to / Received from** | The other party. |
 | **Method** | Cash, mobile money, bank or other. |
 | **Reference** | Receipt number, MoMo transaction ID, cheque number. |
 | **Receipt link** | A link to a photo of the receipt — a Drive or Photos link is fine. The system does not store the image itself, only the link. |
-| **Note** | Anything the auditor should know. |
+| **Note** | Anything the approver should know. |
 
 **Fill in the reference or the receipt link for every expense.** An expense with neither is
 flagged under Exceptions, because months later there is no way to verify it happened.
 
-When you save, the entry is pending and the screen says so. It is now the auditor's turn.
+When you save, the entry is pending and the screen says so. It is now the approver's turn.
 
 **Fixing a mistake:** while an entry is still pending, you can **Edit** your own entries
 freely. Once it has been approved or rejected, editing it sends it back to pending for a fresh
@@ -226,8 +231,8 @@ decision. You can only touch entries you recorded yourself:
 **Import a sheet** on the Ledger, next to Record entry. Accountants and administrators only.
 Use it when you have a batch to enter — a month of receipts, a list from the bank.
 
-1. **Download the template.** It opens in Excel with the right columns, and carries a second
-   sheet listing every budget line so you can copy the names exactly.
+1. **Download the template.** It opens in Excel with the right columns. Direction, Budget line
+   and Method are dropdowns, so you pick from the list instead of typing and mistyping.
 2. **Fill in one row per entry.** Dates as `dd/mm/yyyy`, one budget line per row spelled the way
    it appears in the system. The dialog lists every budget line in use, so copy from there.
 3. **Upload it.** `.xlsx` straight from Excel, Numbers or Google Sheets works, so does `.csv`.
@@ -235,7 +240,11 @@ Use it when you have a batch to enter — a month of receipts, a list from the b
 4. **Check the preview.** Nothing has been saved yet. Every row is listed with either "Ready"
    or the exact problem with it — a budget line that does not exist, a date in the future, an
    amount that is not a number.
-5. **Import.** The button turns on only when every row is ready.
+5. **Attach a supporting document, if you have one.** These fields appear with the preview,
+   once the sheet has been read. A bank statement or a scanned batch of receipts is stored
+   once and attached to every entry in the import, and a note here goes on each of them too —
+   added to any note already on the row.
+6. **Import.** The button turns on only when every row is ready.
 
 **A sheet with any bad row imports nothing.** This is on purpose: half a batch in the book, with
 no easy way to tell which half, is worse than a rejected file. Fix the rows it names, upload
@@ -246,11 +255,13 @@ audit trail naming the file it came from.
 
 ### Approvals
 
-The auditor's working screen. Every list reads newest first.
+The approver's working screen. Every list reads newest first.
 
-Three tabs run across the top — **Pending**, **Approved** and **Rejected** — each showing how
-many entries are in that state, what they are worth, and their share of the book. Clicking one
-filters the table beneath it. The screen opens on Pending; Approved and Rejected show who made
+Four tabs run across the top — **All**, **Pending**, **Approved** and **Rejected** — each
+showing how many entries are in that state, what they are worth, and their share of the book.
+Clicking one filters the table beneath it. The screen opens on Pending, since that is the work
+waiting for you; **All** puts the three together with a status badge on every row, and you can
+still approve or reject a pending entry from there. The screen opens on Pending; Approved and Rejected show who made
 the decision, with the comment either decision carried.
 
 Each row shows everything you need to decide without clicking anywhere: description, amount,
@@ -273,6 +284,21 @@ When the queue is empty: *"Nothing waiting. The accountant is up to date."*
 a payment that was reversed. Voiding also needs a reason. The entry stays in the book, struck
 through, and stops counting.
 
+### Comments
+
+Every entry carries a **Comment** button, on the Ledger and on Approvals. It opens the remarks
+already left against that entry and a box to add one.
+
+Anyone who can see an entry can comment, and that includes the **Auditor** — the read-only
+role. This is the one thing that role can add. A comment changes nothing about the entry: not
+the amount, not the status, not the balance. It is a question or an observation left where the
+next person will find it: *"checked against the March statement"*, *"asked Claudine about the
+reference"*.
+
+**Comments cannot be edited or removed.** Like the audit trail, a remark that could be quietly
+rewritten later would be worth nothing to whoever reads it. Each one records who wrote it, in
+what role, and when — and it also appears in the audit trail.
+
 ### Audit trail
 
 Everything that has happened, newest first. Auditors and administrators.
@@ -294,7 +320,7 @@ system, and no administrator setting that unlocks it.
 
 ### Exceptions
 
-The screen an auditor should open first. It does not find fraud — it finds the entries most
+The screen an approver should open first. It does not find fraud — it finds the entries most
 worth a second look, in six lists.
 
 | List | Why it matters |
@@ -346,7 +372,7 @@ longer sign in, but everything they recorded stays attributed to them.
 You cannot demote or deactivate your own account. That is what stops the last administrator
 locking everyone out.
 
-**Close a month** *(auditors and administrators)* — the month-end ritual:
+**Close a month** *(approvers and administrators)* — the month-end ritual:
 
 1. Pick the month.
 2. Enter the cash you physically counted, if you counted it.
@@ -371,10 +397,10 @@ for administrators — reopening is logged like everything else.
 **Every day — accountant.** Record entries as they happen, while you still have the receipt in
 your hand. Attach the reference or a photo link to every expense.
 
-**Two or three times a week — auditor.** Clear the approvals queue. Entries sitting pending mean
+**Two or three times a week — approver.** Clear the approvals queue. Entries sitting pending mean
 the balance on the Overview is understating what the hub has actually spent.
 
-**End of the month — auditor.**
+**End of the month — approver.**
 
 1. Clear the approvals queue completely.
 2. Open **Exceptions** and work through each list. Ask about anything you do not recognise.
@@ -392,12 +418,12 @@ as a correction in the current month, which is exactly how a paper cashbook hand
 
 | Message | What it means | What to do |
 |---|---|---|
-| *You recorded this entry, so someone else has to approve it.* | You are trying to approve your own work. | Ask a different auditor. |
-| *Your role (auditor) cannot do this.* | Auditors do not record entries — the separation is the point. | Ask the accountant to record it. |
+| *You recorded this entry, so someone else has to approve it.* | You are trying to approve your own work. | Ask a different approver. |
+| *Your role (approver) cannot do this.* | Auditors do not record entries — the separation is the point. | Ask the accountant to record it. |
 | *March 2026 is closed. Record the correction in an open month instead.* | The entry is dated inside a closed month. | Record it in the current month as a correction, or ask an administrator to reopen the month. |
 | *3 entries are still waiting for approval in March 2026.* | You are closing a month with pending entries. | Clear the approvals queue, then close. |
-| *You can only edit entries you recorded yourself.* | It is someone else's entry. | Ask them to change it, or ask an auditor to void it. |
-| *This entry has already been reviewed. Ask an auditor to void it.* | Pending entries can be cancelled by the person who recorded them; reviewed ones cannot. | Ask an auditor to void it. |
+| *You can only edit entries you recorded yourself.* | It is someone else's entry. | Ask them to change it, or ask an approver to void it. |
+| *This entry has already been reviewed. Ask an approver to void it.* | Pending entries can be cancelled by the person who recorded them; reviewed ones cannot. | Ask an approver to void it. |
 | *This entry was voided, so it can no longer be edited.* | Void is final. | Record a new, correct entry. |
 | *"Rent" is an expense line, so it cannot hold money coming in.* | The budget line does not match the direction. | Pick an income line, or change the direction. |
 | *A budget line with that name already exists.* | Duplicate name. | Reuse the existing line, or reactivate it if it was deactivated. |
@@ -411,11 +437,11 @@ as a correction in the current month, which is exactly how a paper cashbook hand
 
 **My entry does not show in the balance. Is it lost?**
 No. It is pending. Look at the Status column — it will say Pending, with a dash in the balance
-column. It counts the moment an auditor approves it.
+column. It counts the moment an approver approves it.
 
 **Why can't I approve my own entry? I know it is correct.**
 Because the value of the check comes entirely from a second pair of eyes. An approval you gave
-yourself proves nothing to an auditor next year. The rule holds for administrators too.
+yourself proves nothing to an approver next year. The rule holds for administrators too.
 
 **Where is the delete button?**
 There isn't one. Void the entry instead, with a reason. Deleting would leave a hole in the
@@ -423,7 +449,7 @@ record with nothing to explain it; a voided entry explains itself.
 
 **I recorded 45,000 but it was 40,000.**
 If it is still pending, edit it. If it has been approved, edit it anyway — it goes back to
-pending and an auditor reviews the change, seeing exactly what moved. Both versions stay in the
+pending and an approver reviews the change, seeing exactly what moved. Both versions stay in the
 audit trail.
 
 **Can an administrator quietly change the audit trail?**

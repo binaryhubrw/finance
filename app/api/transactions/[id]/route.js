@@ -5,8 +5,10 @@ import { handler, ok, badRequest, forbidden, notFound, conflict, readBody } from
 import { requireUser, requireRole } from '@/lib/session';
 import { assertPeriodOpen } from '@/lib/period';
 import { verifyStored } from '@/lib/uploads';
+import { baseOf, foldExtras } from '@/lib/extras';
 import { writeAudit, diff, summarise, snapshotOf, plain } from '@/lib/audit';
 import { transactionWithHistory, startOfDay } from '@/lib/queries';
+import { notify, entryReturnedToPending } from '@/lib/email';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -17,6 +19,7 @@ const EDITABLE = [
   'category',
   'type',
   'amount',
+  'extras',
   'method',
   'reference',
   'receiptUrl',
@@ -73,11 +76,18 @@ export const PATCH = handler(async (request, { params }) => {
     if (!TYPES.includes(body.type)) details.type = 'Say whether money came in or went out.';
     else entry.type = body.type;
   }
-  if (body.amount !== undefined) {
-    const amount = Number(body.amount);
-    if (!Number.isFinite(amount) || amount < 0.01) {
-      details.amount = 'Enter an amount greater than zero.';
-    } else entry.amount = amount;
+  // The amount and its extras move together — changing either re-totals both.
+  if (body.amount !== undefined || body.extras !== undefined) {
+    const base = body.amount !== undefined ? body.amount : baseOf(entry.toObject());
+    const raw = body.extras !== undefined ? body.extras : entry.extras;
+    const folded = foldExtras(base, raw);
+    if (folded.error) details.amount = folded.error;
+    else {
+      entry.amount = folded.total;
+      // Assigning undefined leaves the stored array untouched, so clearing the
+      // charges has to be an explicit empty array.
+      entry.set('extras', folded.extras ?? []);
+    }
   }
   if (body.method !== undefined) {
     if (!METHODS.includes(body.method)) details.method = 'Choose one of the payment methods.';
@@ -144,6 +154,15 @@ export const PATCH = handler(async (request, { params }) => {
     changes,
     snapshot: snapshotOf(entry),
   });
+
+  if (wasReviewed) {
+    notify(async () => {
+      const category = await Category.findById(entry.category).select('name').lean();
+      await entryReturnedToPending({
+        entry, category, editedBy: actor, changes: summarise(changes),
+      });
+    });
+  }
 
   return ok({ transaction: plain(entry.toObject()), returnedToPending: wasReviewed });
 });

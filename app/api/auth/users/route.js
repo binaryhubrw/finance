@@ -3,6 +3,7 @@ import { ROLES } from '@/lib/enums';
 import { handler, ok, badRequest, conflict, readBody } from '@/lib/http';
 import { requireRole } from '@/lib/session';
 import { writeAudit, snapshotOf } from '@/lib/audit';
+import { notify, accountCreated } from '@/lib/email';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -60,6 +61,10 @@ export const POST = handler(async (request) => {
     actor,
     summary: `Added ${user.name} as ${user.role}`,
     snapshot: snapshotOf(user),
+  });
+
+  notify(async () => {
+    await accountCreated({ person: user, role: user.role, createdBy: actor });
   });
 
   return ok({ user: user.toJSON() }, 201);

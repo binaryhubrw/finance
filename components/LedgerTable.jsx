@@ -10,6 +10,7 @@ import EntryDialog from '@/components/EntryDialog';
 import { DownloadIcon, PlusIcon, UploadIcon } from '@/components/Icons';
 import ImportDialog from '@/components/ImportDialog';
 import AttachmentPreview from '@/components/AttachmentPreview';
+import EntryComments from '@/components/EntryComments';
 
 export default function LedgerTable({ data, categories, query, user }) {
   const [editing, setEditing] = useState(null);
@@ -130,25 +131,31 @@ export default function LedgerTable({ data, categories, query, user }) {
                         Approved: {entry.reviewNote}
                       </p>
                     ) : null}
+                    {entry.extras?.length ? (
+                      <p className="label label-quiet mt-1">
+                        {money(entry.amount - entry.extras.reduce((sum, x) => sum + x.amount, 0))}
+                        {entry.extras.map((x) => ` + ${x.label} ${money(x.amount)}`).join('')}
+                      </p>
+                    ) : null}
+
                     {entry.editedAfterReview && entry.status === 'pending' ? (
                       <p className="mt-1 text-[12px] text-flag">Edited after review</p>
                     ) : null}
 
-                    {entry.attachment || entry.receiptUrl ? (
-                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
-                        <AttachmentPreview attachment={entry.attachment} compact />
-                        {entry.receiptUrl ? (
-                          <a
-                            className="link text-[12px]"
-                            href={entry.receiptUrl}
-                            target="_blank"
-                            rel="noreferrer noopener"
-                          >
-                            Receipt link
-                          </a>
-                        ) : null}
-                      </div>
-                    ) : null}
+                    <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
+                      <AttachmentPreview attachment={entry.attachment} compact />
+                      <EntryComments entry={entry} count={entry.commentCount ?? 0} compact />
+                      {entry.receiptUrl ? (
+                        <a
+                          className="link text-[12px]"
+                          href={entry.receiptUrl}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                        >
+                          Receipt link
+                        </a>
+                      ) : null}
+                    </div>
                   </td>
 
                   <td className="text-[12px] text-ink-soft">

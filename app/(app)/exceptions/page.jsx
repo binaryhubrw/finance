@@ -14,7 +14,7 @@ export default async function ExceptionsPage({ searchParams }) {
     return (
       <div className="card px-5 py-8">
         <p className="eyebrow">Exceptions</p>
-        <h1 className="page-title mt-1">This section is for the auditor</h1>
+        <h1 className="page-title mt-1">This section is for reviewers</h1>
         <p className="mt-2 text-[13px] text-ink-soft">
           It lists the entries a reviewer should look at twice. Keep receipt references on every
           expense and most of it stays empty.

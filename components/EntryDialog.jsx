@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { formatDate, money, toInputDate, todayInput } from '@/lib/format';
+import { MAX_EXTRAS, baseOf } from '@/lib/extras';
 import { METHOD_LABELS, METHODS } from '@/lib/enums';
 import Modal from '@/components/Modal';
 import Field from '@/components/Field';
@@ -13,6 +14,7 @@ const emptyForm = () => ({
   date: todayInput(),
   type: 'out',
   amount: '',
+  extras: [],
   category: '',
   description: '',
   payee: '',
@@ -25,7 +27,9 @@ const emptyForm = () => ({
 const formFrom = (entry) => ({
   date: toInputDate(entry.date),
   type: entry.type,
-  amount: String(entry.amount),
+  // The stored amount is the total; the field holds what it was before charges.
+  amount: String(baseOf(entry)),
+  extras: (entry.extras ?? []).map((row) => ({ label: row.label, amount: String(row.amount) })),
   category: String(entry.category?._id ?? entry.category ?? ''),
   description: entry.description ?? '',
   payee: entry.payee ?? '',
@@ -105,6 +109,29 @@ export default function EntryDialog({ open, onClose, categories, entry = null, c
   const totalToSave = staged.length + (Object.keys(localProblems(form)).length === 0 ? 1 : 0);
 
   const set = (key) => (event) => setForm((current) => ({ ...current, [key]: event.target.value }));
+
+  const extras = form.extras ?? [];
+  const extrasTotal = extras.reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
+  const grandTotal = (Number(form.amount) || 0) + extrasTotal;
+
+  const setExtra = (index, key) => (event) =>
+    setForm((current) => {
+      const next = [...(current.extras ?? [])];
+      next[index] = { ...next[index], [key]: event.target.value };
+      return { ...current, extras: next };
+    });
+
+  const addExtra = () =>
+    setForm((current) => ({
+      ...current,
+      extras: [...(current.extras ?? []), { label: '', amount: '' }],
+    }));
+
+  const removeExtra = (index) =>
+    setForm((current) => ({
+      ...current,
+      extras: (current.extras ?? []).filter((_, i) => i !== index),
+    }));
 
   const choices = categories.filter(
     (category) =>
@@ -228,7 +255,7 @@ export default function EntryDialog({ open, onClose, categories, entry = null, c
       description={
         entry
           ? 'Changing a reviewed entry sends it back to the approval queue.'
-          : 'The entry is saved as pending. It moves the balance once an auditor approves it.'
+          : 'The entry is saved as pending. It moves the balance once an approver clears it.'
       }
       width={640}
     >
@@ -253,7 +280,12 @@ export default function EntryDialog({ open, onClose, categories, entry = null, c
                     <div className="min-w-0">
                       <p className="text-[13px]">{row.description}</p>
                       <p className="label label-quiet mt-1">
-                        {[formatDate(row.date), line?.name, row.attachment ? 'receipt attached' : null]
+                        {[
+                          formatDate(row.date),
+                          line?.name,
+                          (row.extras ?? []).length ? `${row.extras.length} added charge${row.extras.length === 1 ? '' : 's'}` : null,
+                          row.attachment ? 'receipt attached' : null,
+                        ]
                           .filter(Boolean)
                           .join(' · ')}
                       </p>
@@ -270,7 +302,10 @@ export default function EntryDialog({ open, onClose, categories, entry = null, c
                           row.type === 'in' ? 'text-credit' : 'text-debit'
                         }`}
                       >
-                        {money(Number(row.amount))}
+                        {money(
+                          (Number(row.amount) || 0) +
+                            (row.extras ?? []).reduce((sum, x) => sum + (Number(x.amount) || 0), 0),
+                        )}
                       </span>
                       <button
                         type="button"
@@ -360,6 +395,84 @@ export default function EntryDialog({ open, onClose, categories, entry = null, c
             numeric
             required
           />
+
+          <div className="sm:col-span-2">
+            {extras.length ? (
+              <div className="rounded-md border border-rule bg-sunk px-3 py-3">
+                <p className="label mb-2">Added to the amount</p>
+                <ul className="space-y-2">
+                  {extras.map((row, index) => (
+                    <li key={index} className="flex flex-wrap items-end gap-2">
+                      <div className="min-w-[140px] flex-1">
+                        <label htmlFor={`extra-label-${index}`} className="label label-quiet mb-1 block">
+                          What for
+                        </label>
+                        <input
+                          id={`extra-label-${index}`}
+                          className="field"
+                          value={row.label}
+                          maxLength={120}
+                          placeholder="Delivery, bank charge, VAT"
+                          onChange={setExtra(index, 'label')}
+                        />
+                      </div>
+                      <div className="w-[130px]">
+                        <label htmlFor={`extra-amount-${index}`} className="label label-quiet mb-1 block">
+                          Amount
+                        </label>
+                        <input
+                          id={`extra-amount-${index}`}
+                          className="field field-num"
+                          type="number"
+                          step="0.01"
+                          min="0.01"
+                          inputMode="decimal"
+                          value={row.amount}
+                          onChange={setExtra(index, 'amount')}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        className="btn btn-sm"
+                        onClick={() => removeExtra(index)}
+                        aria-label={`Remove ${row.label || 'this charge'}`}
+                      >
+                        Remove
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-rule pt-3">
+                  {extras.length < MAX_EXTRAS ? (
+                    <button type="button" className="btn btn-sm" onClick={addExtra}>
+                      <PlusIcon size={13} />
+                      Add another
+                    </button>
+                  ) : (
+                    <span className="text-[12px] text-ink-soft">
+                      That is as many charges as one entry can carry.
+                    </span>
+                  )}
+                  <p className="text-[13px]">
+                    <span className="label">Total recorded</span>{' '}
+                    <span
+                      className={`num text-[16px] font-semibold ${
+                        form.type === 'in' ? 'text-credit' : 'text-debit'
+                      }`}
+                    >
+                      {money(grandTotal)}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <button type="button" className="btn btn-sm" onClick={addExtra}>
+                <PlusIcon size={13} />
+                Add a charge to this amount
+              </button>
+            )}
+          </div>
 
           <Field
             label="Budget line"
@@ -508,8 +621,8 @@ export default function EntryDialog({ open, onClose, categories, entry = null, c
             {entry
               ? 'Every change is written to the audit trail.'
               : staged.length
-                ? 'All of them are saved together, or none are. Each waits for an auditor.'
-                : 'Saved entries wait for an auditor before they count.'}
+                ? 'All of them are saved together, or none are. Each waits for an approver.'
+                : 'Saved entries wait for an approver before they count.'}
           </p>
           <div className="flex flex-wrap gap-2">
             <button type="button" className="btn" onClick={onClose} disabled={busy}>

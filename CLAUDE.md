@@ -67,7 +67,18 @@ duplicate-key errors are already mapped.
 Every mutating route must call `writeAudit` from `lib/audit.js`, and `assertPeriodOpen(date)`
 from `lib/period.js` before create, edit, void and approve.
 
+`models/Comment.js` is append-only for the same reason `AuditLog` is: comments are kept in
+their own collection so leaving one cannot touch the entry, which is what lets the read-only
+`viewer` role post them. There is no PATCH or DELETE on `/api/transactions/[id]/comments`,
+and none should be added.
+
 ### Auth
+
+**Role keys and role labels differ on purpose.** The database and every `requireRole()` call
+use `admin` / `auditor` / `accountant` / `viewer`; the interface shows `auditor` as
+**Approver** and `viewer` as **Auditor**, through `ROLE_LABELS` in `lib/enums.js`. Renaming
+the keys would mean migrating existing users, so it was not done. Never rename a key to match
+a label without that migration, and write user-facing copy with the label, not the key.
 
 `requireUser()` / `requireRole()` in `lib/session.js` verify the JWT **and** re-read the user
 from the database on every call, so deactivating someone takes effect immediately rather than
@@ -112,6 +123,22 @@ Two bugs have come from the same root, so these are worth knowing:
   a fresh function each render. `Modal` holds it in a ref and depends only on `[open]`;
   putting `onClose` in the dependency array re-runs the setup effect on every keystroke and
   steals focus out of the field being typed into.
+
+## Email
+
+`lib/mailer.js` (transport) and `lib/email.js` (templates, one function per event), split so
+the transport can be swapped without touching anything above it. Call sites use `notify()`,
+which is fire-and-forget and swallows every error: **a failed email must never fail the
+business operation**, and it must never hold up the response. Never `await notify()`.
+
+The relay address, From identity and the app's own URL are **built in** (`lib/mailer.js`,
+`lib/app-url.js`) rather than read from the environment, because production deploys from an
+image with no way to set variables. None of them is a secret — the relay has no credentials.
+Environment variables still override them. Do not move these back to env-only without a way
+to set env in production.
+
+`nodemailer` is the one dependency added beyond BUILD.md's list, which was an explicit
+instruction along with overriding §13's "no email notifications".
 
 ## Design constraints (binding — see BUILD.md §10)
 

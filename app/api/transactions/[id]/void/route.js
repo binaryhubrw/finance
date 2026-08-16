@@ -3,6 +3,9 @@ import { handler, ok, badRequest, forbidden, notFound, conflict, readBody } from
 import { requireRole } from '@/lib/session';
 import { assertPeriodOpen } from '@/lib/period';
 import { writeAudit, snapshotOf, plain } from '@/lib/audit';
+import { notify, entryReviewed } from '@/lib/email';
+import User from '@/models/User';
+import Category from '@/models/Category';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -29,7 +32,7 @@ export const POST = handler(async (request, { params }) => {
       throw forbidden('You can only void entries you recorded yourself.');
     }
     if (entry.status !== 'pending') {
-      throw forbidden('This entry has already been reviewed. Ask an auditor to void it.');
+      throw forbidden('This entry has already been reviewed. Ask an approver to void it.');
     }
   }
 
@@ -50,6 +53,16 @@ export const POST = handler(async (request, { params }) => {
     summary: `Voided “${entry.description}”: ${entry.reviewNote}`,
     changes: [{ field: 'status', from, to: 'void' }],
     snapshot: snapshotOf(entry),
+  });
+
+  notify(async () => {
+    const [recorder, category] = await Promise.all([
+      User.findById(entry.recordedBy).select('name email').lean(),
+      Category.findById(entry.category).select('name').lean(),
+    ]);
+    await entryReviewed({
+      entry, category, recorder, reviewer: actor, decision: 'void', reason: entry.reviewNote,
+    });
   });
 
   return ok({ transaction: plain(entry.toObject()) });

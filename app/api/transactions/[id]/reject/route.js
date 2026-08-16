@@ -3,6 +3,9 @@ import { handler, ok, badRequest, forbidden, notFound, conflict, readBody } from
 import { requireRole } from '@/lib/session';
 import { assertPeriodOpen } from '@/lib/period';
 import { writeAudit, snapshotOf, plain } from '@/lib/audit';
+import { notify, entryReviewed } from '@/lib/email';
+import User from '@/models/User';
+import Category from '@/models/Category';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -45,6 +48,16 @@ export const POST = handler(async (request, { params }) => {
     summary: `Rejected “${entry.description}”: ${entry.reviewNote}`,
     changes: [{ field: 'status', from, to: 'rejected' }],
     snapshot: snapshotOf(entry),
+  });
+
+  notify(async () => {
+    const [recorder, category] = await Promise.all([
+      User.findById(entry.recordedBy).select('name email').lean(),
+      Category.findById(entry.category).select('name').lean(),
+    ]);
+    await entryReviewed({
+      entry, category, recorder, reviewer: actor, decision: 'rejected', reason: entry.reviewNote,
+    });
   });
 
   return ok({ transaction: plain(entry.toObject()) });

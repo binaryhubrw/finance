@@ -5,8 +5,10 @@ import { handler, ok, badRequest, readBody } from '@/lib/http';
 import { requireRole } from '@/lib/session';
 import { assertPeriodOpen } from '@/lib/period';
 import { verifyStored } from '@/lib/uploads';
+import { foldExtras } from '@/lib/extras';
 import { writeAudit, snapshotOf, plain } from '@/lib/audit';
 import { startOfDay } from '@/lib/queries';
+import { notify, entryRecorded } from '@/lib/email';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -51,10 +53,9 @@ export const POST = handler(async (request) => {
     }
     if (!TYPES.includes(row.type)) details.type = 'Say whether money came in or went out.';
 
-    const amount = Number(row.amount);
-    if (!Number.isFinite(amount) || amount < 0.01) {
-      details.amount = 'Enter an amount greater than zero.';
-    }
+    const folded = foldExtras(row.amount, row.extras);
+    if (folded.error) details.amount = folded.error;
+    const amount = folded.total;
     if (row.method && !METHODS.includes(row.method)) {
       details.method = 'Choose one of the payment methods.';
     }
@@ -87,6 +88,7 @@ export const POST = handler(async (request) => {
       category: category._id,
       type: row.type,
       amount,
+      extras: folded.extras,
       method: row.method ?? 'cash',
       reference: String(row.reference ?? '').trim(),
       receiptUrl: String(row.receiptUrl ?? '').trim(),
@@ -122,6 +124,15 @@ export const POST = handler(async (request) => {
       snapshot: snapshotOf(entry),
     });
   }
+
+  notify(async () => {
+    await entryRecorded({
+      entry: created[0],
+      category: categories.get(String(created[0].category)),
+      recordedBy: actor,
+      count: created.length,
+    });
+  });
 
   return ok({ recorded: created.length, transactions: created.map((e) => plain(e.toObject())) }, 201);
 });

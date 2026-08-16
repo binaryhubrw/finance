@@ -1,8 +1,9 @@
 import User from '@/models/User';
-import { ROLES } from '@/lib/enums';
+import { ROLES, ROLE_LABELS } from '@/lib/enums';
 import { handler, ok, badRequest, forbidden, notFound, readBody } from '@/lib/http';
 import { requireRole } from '@/lib/session';
 import { writeAudit, diff, summarise, snapshotOf } from '@/lib/audit';
+import { notify, accountChanged } from '@/lib/email';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -62,6 +63,25 @@ export const PATCH = handler(async (request, { params }) => {
       snapshot: snapshotOf(user),
     });
   }
+
+  notify(async () => {
+    const person = { name: user.name, email: user.email };
+    // One email per thing that actually changed, so a role change and a
+    // password reset in the same save are not collapsed into one vague notice.
+    if (passwordReset) {
+      await accountChanged({ person, change: 'password', actor });
+    }
+    if (body.role !== undefined && body.role !== before.role) {
+      await accountChanged({
+        person, change: 'role', detail: ROLE_LABELS[user.role] ?? user.role, actor,
+      });
+    }
+    if (body.active !== undefined && Boolean(body.active) !== before.active) {
+      await accountChanged({
+        person, change: user.active ? 'activated' : 'deactivated', actor,
+      });
+    }
+  });
 
   return ok({ user: user.toJSON() });
 });

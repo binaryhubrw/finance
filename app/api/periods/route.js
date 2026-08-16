@@ -5,6 +5,7 @@ import { requireUser, requireRole } from '@/lib/session';
 import { monthStart, monthEnd, monthLabel } from '@/lib/period';
 import { writeAudit, snapshotOf, plain } from '@/lib/audit';
 import { balanceBefore } from '@/lib/queries';
+import { notify, periodChanged } from '@/lib/email';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -82,6 +83,13 @@ export const POST = handler(async (request) => {
       counted === null ? '' : ` against ${counted.toLocaleString('en-US')} counted`
     }`,
     snapshot: snapshotOf(period),
+  });
+
+  notify(async () => {
+    await periodChanged({
+      year: period.year, month: period.month, action: 'close', actor,
+      closingBalance: period.closingBalance, variance: period.variance,
+    });
   });
 
   return ok({ period: plain(period.toObject()) }, 201);

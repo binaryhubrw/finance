@@ -3,6 +3,9 @@ import { handler, ok, forbidden, notFound, conflict } from '@/lib/http';
 import { requireRole } from '@/lib/session';
 import { assertPeriodOpen } from '@/lib/period';
 import { writeAudit, snapshotOf, plain } from '@/lib/audit';
+import { notify, entryReviewed } from '@/lib/email';
+import User from '@/models/User';
+import Category from '@/models/Category';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -26,7 +29,7 @@ export const POST = handler(async (request, { params }) => {
   const recordedById = String(entry.recordedBy?._id ?? entry.recordedBy);
   if (recordedById === actor.id && !selfApprovalAllowed) {
     throw forbidden(
-      'You recorded this entry, so someone else has to approve it. Ask another auditor to review it.',
+      'You recorded this entry, so someone else has to approve it. Ask another approver to review it.',
     );
   }
 
@@ -50,6 +53,16 @@ export const POST = handler(async (request, { params }) => {
     }`,
     changes: [{ field: 'status', from, to: 'approved' }],
     snapshot: snapshotOf(entry),
+  });
+
+  notify(async () => {
+    const [recorder, category] = await Promise.all([
+      User.findById(entry.recordedBy).select('name email').lean(),
+      Category.findById(entry.category).select('name').lean(),
+    ]);
+    await entryReviewed({
+      entry, category, recorder, reviewer: actor, decision: 'approved', reason: comment,
+    });
   });
 
   return ok({ transaction: plain(entry.toObject()) });

@@ -58,7 +58,11 @@ export function NavLinks({ role, pendingCount = 0 }) {
   );
 }
 
-export function SignOutButton({ compact = false }) {
+/**
+ * `tone` follows the surface it sits on — the dark sidebar wants white text,
+ * the header bar wants ink.
+ */
+export function SignOutButton({ compact = false, tone = 'panel' }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
 
@@ -77,9 +81,11 @@ export function SignOutButton({ compact = false }) {
       type="button"
       onClick={signOut}
       disabled={busy}
-      className={`inline-flex items-center gap-1.5 rounded-md text-[12px] font-medium text-white/65 transition-colors duration-140 hover:text-white ${
-        compact ? '' : 'px-2 py-1 hover:bg-white/10'
-      }`}
+      className={`inline-flex items-center gap-1.5 rounded-md text-[12px] font-medium transition-colors duration-140 ${
+        tone === 'bar'
+          ? 'px-2 py-1 text-ink-soft hover:bg-sunk hover:text-ink'
+          : 'text-white/65 hover:text-white'
+      } ${compact || tone === 'bar' ? '' : 'px-2 py-1 hover:bg-white/10'}`}
     >
       <SignOutIcon size={14} />
       {busy ? 'Signing out' : 'Sign out'}

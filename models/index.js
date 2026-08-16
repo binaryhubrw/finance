@@ -3,6 +3,7 @@ import Category from './Category.js';
 import Transaction from './Transaction.js';
 import AuditLog from './AuditLog.js';
 import ClosedPeriod from './ClosedPeriod.js';
+import Comment from './Comment.js';
 
 /**
  * Importing a model registers its schema with Mongoose. `populate('recordedBy')`
@@ -15,7 +16,7 @@ import ClosedPeriod from './ClosedPeriod.js';
  * whichever route happens to run first.
  */
 export function registerModels() {
-  return { User, Category, Transaction, AuditLog, ClosedPeriod };
+  return { User, Category, Transaction, AuditLog, ClosedPeriod, Comment };
 }
 
-export { User, Category, Transaction, AuditLog, ClosedPeriod };
+export { User, Category, Transaction, AuditLog, ClosedPeriod, Comment };

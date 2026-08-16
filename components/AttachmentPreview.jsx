@@ -10,7 +10,7 @@ const fileSize = (bytes) => {
 };
 
 /**
- * Opens a row's receipt without leaving the page. An auditor checking an amount
+ * Opens a row's receipt without leaving the page. An approver checking an amount
  * against its receipt should not have to lose the table to do it.
  *
  * Images render directly. PDFs go in an <object>, which uses the browser's own
