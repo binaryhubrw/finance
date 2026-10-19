@@ -1,8 +1,10 @@
 import Transaction from '@/models/Transaction';
-import { handler, ok, badRequest, forbidden, notFound, conflict, readBody } from '@/lib/http';
+import { handler, ok, badRequest, notFound } from '@/lib/http';
 import { requireRole } from '@/lib/session';
 import { assertPeriodOpen } from '@/lib/period';
 import { writeAudit, snapshotOf, plain } from '@/lib/audit';
+import { assertCanAct } from '@/lib/flow';
+import { readBody } from '@/lib/http';
 import { notify, entryReviewed } from '@/lib/email';
 import User from '@/models/User';
 import Category from '@/models/Category';
@@ -10,30 +12,30 @@ import Category from '@/models/Category';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+/**
+ * Returns the entry to its initiator, whichever stage it is at. The initiator's
+ * next edit sends it back to Approver 1, so a correction is always re-checked
+ * from the start.
+ */
 export const POST = handler(async (request, { params }) => {
-  const actor = await requireRole('auditor', 'admin');
+  const actor = await requireRole('approver1', 'accountant', 'approver2', 'admin');
   const { id } = await params;
   const { reviewNote } = await readBody(request);
 
   if (!reviewNote || !String(reviewNote).trim()) {
-    throw badRequest('Say why you are rejecting this entry.', {
-      reviewNote: 'The accountant needs to know what to correct.',
+    throw badRequest('Say why you are sending this entry back.', {
+      reviewNote: 'The initiator needs to know what to correct.',
     });
   }
 
   const entry = await Transaction.findById(id);
   if (!entry) throw notFound('That entry no longer exists.');
-  if (entry.status === 'void') throw conflict('This entry was voided, so it cannot be rejected.');
-  if (entry.status === 'rejected') throw conflict('This entry was already rejected.');
 
-  const selfApprovalAllowed = process.env.ALLOW_SELF_APPROVAL === 'true';
-  if (String(entry.recordedBy) === actor.id && !selfApprovalAllowed) {
-    throw forbidden('You recorded this entry, so someone else has to review it.');
-  }
-
+  assertCanAct(entry, actor);
   await assertPeriodOpen(entry.date);
 
   const from = entry.status;
+  entry.rejectedStage = from;
   entry.status = 'rejected';
   entry.reviewedBy = actor.id;
   entry.reviewedAt = new Date();
@@ -45,7 +47,7 @@ export const POST = handler(async (request, { params }) => {
     entityId: entry._id,
     action: 'reject',
     actor,
-    summary: `Rejected “${entry.description}”: ${entry.reviewNote}`,
+    summary: `Returned “${entry.description}” to the initiator: ${entry.reviewNote}`,
     changes: [{ field: 'status', from, to: 'rejected' }],
     snapshot: snapshotOf(entry),
   });

@@ -25,7 +25,7 @@ const MAX_ENTRIES = 50;
  * that needs fixing.
  */
 export const POST = handler(async (request) => {
-  const actor = await requireRole('accountant', 'admin');
+  const actor = await requireRole('initiator', 'admin');
   const body = await readBody(request);
   const rows = Array.isArray(body.entries) ? body.entries : null;
 

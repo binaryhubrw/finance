@@ -1,3 +1,4 @@
+import { CLOSER_ROLES, IN_FLIGHT } from '@/lib/enums';
 import ClosedPeriod from '@/models/ClosedPeriod';
 import Transaction from '@/models/Transaction';
 import { handler, ok, badRequest, conflict, readBody } from '@/lib/http';
@@ -20,7 +21,7 @@ export const GET = handler(async () => {
 });
 
 export const POST = handler(async (request) => {
-  const actor = await requireRole('auditor', 'admin');
+  const actor = await requireRole(CLOSER_ROLES);
   const { year, month, countedCash, note } = await readBody(request);
 
   const y = Number(year);
@@ -44,7 +45,7 @@ export const POST = handler(async (request) => {
   if (existing) throw conflict(`${label} is already closed.`);
 
   const pending = await Transaction.countDocuments({
-    status: 'pending',
+    status: { $in: IN_FLIGHT },
     date: { $gte: start, $lt: end },
   });
   if (pending > 0) {

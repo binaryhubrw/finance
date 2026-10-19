@@ -67,13 +67,20 @@ export const POST = handler(async (request, { params }) => {
       .populate('category', 'name')
       .populate('recordedBy', 'name email')
       .populate('reviewedBy', 'name email')
+      .populate('approval1.by settlement.by approval2.by', 'name email')
       .lean();
     await entryCommented({
       entry: full,
       category: full.category,
       author: actor,
       body: text,
-      involved: [full.recordedBy, full.reviewedBy].filter(Boolean),
+      involved: [
+        full.recordedBy,
+        full.reviewedBy,
+        full.approval1?.by,
+        full.settlement?.by,
+        full.approval2?.by,
+      ].filter(Boolean),
     });
   });
 

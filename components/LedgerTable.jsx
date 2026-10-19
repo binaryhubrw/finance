@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { qs } from '@/lib/api';
-import { METHOD_LABELS, STATUS_LABELS } from '@/lib/enums';
+import { IN_FLIGHT, METHOD_LABELS, ROLE_LABELS, ROLE_OF_STAGE, STATUS_LABELS } from '@/lib/enums';
 import { formatDate, money } from '@/lib/format';
 import Money from '@/components/Money';
 import EntryDialog from '@/components/EntryDialog';
@@ -17,12 +17,13 @@ export default function LedgerTable({ data, categories, query, user }) {
   const [recording, setRecording] = useState(false);
   const [importing, setImporting] = useState(false);
 
-  const canRecord = user.role === 'accountant' || user.role === 'admin';
+  const canRecord = user.role === 'initiator' || user.role === 'admin';
   const canEdit = (entry) => {
     if (entry.status === 'void') return false;
     if (user.role === 'admin') return true;
-    if (user.role !== 'accountant') return false;
-    return String(entry.recordedBy?._id ?? entry.recordedBy) === user.id && entry.status === 'pending';
+    if (user.role !== 'initiator') return false;
+    const own = String(entry.recordedBy?._id ?? entry.recordedBy) === user.id;
+    return own && (entry.status === 'pending' || entry.status === 'rejected');
   };
 
 
@@ -34,7 +35,7 @@ export default function LedgerTable({ data, categories, query, user }) {
         <p className="text-[13px] text-ink-soft">
           {data.total} {data.total === 1 ? 'entry' : 'entries'}
           {data.summary.pending.count > 0
-            ? ` · ${data.summary.pending.count} still pending, worth ${money(
+            ? ` · ${data.summary.pending.count} not yet approved, worth ${money(
                 data.summary.pending.amount,
               )}`
             : ''}
@@ -71,7 +72,7 @@ export default function LedgerTable({ data, categories, query, user }) {
               <th scope="col" className="w-[112px]">Date</th>
               <th scope="col">Description</th>
               <th scope="col" className="w-[112px]">Method</th>
-              <th scope="col" className="w-[96px]">Status</th>
+              <th scope="col" className="w-[150px]">Status</th>
               <th scope="col" className="w-[120px] text-right">Money in</th>
               <th scope="col" className="w-[120px] text-right">Money out</th>
               {data.isLedgerView ? (
@@ -83,7 +84,7 @@ export default function LedgerTable({ data, categories, query, user }) {
           <tbody>
             {data.items.map((entry) => {
               const voided = entry.status === 'void';
-              const pending = entry.status === 'pending';
+              const pending = IN_FLIGHT.includes(entry.status);
 
               return (
                 <tr key={entry._id} className={voided ? 'text-muted' : undefined}>
@@ -124,7 +125,7 @@ export default function LedgerTable({ data, categories, query, user }) {
                       <p className="mt-1 text-[12px] text-ink-soft">Voided: {entry.reviewNote}</p>
                     ) : null}
                     {entry.status === 'rejected' && entry.reviewNote ? (
-                      <p className="mt-1 text-[12px] text-debit">Rejected: {entry.reviewNote}</p>
+                      <p className="mt-1 text-[12px] text-debit">Returned{entry.rejectedStage ? ` by ${ROLE_LABELS[ROLE_OF_STAGE[entry.rejectedStage]]}` : ''}: {entry.reviewNote}</p>
                     ) : null}
                     {entry.status === 'approved' && entry.reviewNote ? (
                       <p className="mt-1 text-[12px] text-ink-soft">
@@ -138,6 +139,15 @@ export default function LedgerTable({ data, categories, query, user }) {
                       </p>
                     ) : null}
 
+                    {entry.settlement?.paidOn ? (
+                      <p className="label label-quiet mt-1">
+                        {entry.type === 'in' ? 'Received' : 'Paid'} {formatDate(entry.settlement.paidOn)}
+                        {entry.settlement.paymentRef ? ` · ${entry.settlement.paymentRef}` : ''}
+                      </p>
+                    ) : null}
+                    {entry.legacy ? (
+                      <p className="label label-quiet mt-1">Approved before the four-step flow</p>
+                    ) : null}
                     {entry.editedAfterReview && entry.status === 'pending' ? (
                       <p className="mt-1 text-[12px] text-flag">Edited after review</p>
                     ) : null}

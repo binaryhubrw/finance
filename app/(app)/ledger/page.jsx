@@ -1,3 +1,4 @@
+import { OVERSIGHT_ROLES } from '@/lib/enums';
 import { db } from '@/lib/db';
 import { requireUser } from '@/lib/session';
 import Category from '@/models/Category';
@@ -39,7 +40,7 @@ export default async function LedgerPage({ searchParams }) {
   };
   const page = Math.max(1, Number(one(sp.page)) || 1);
 
-  const seesPeopleFilter = ['admin', 'auditor', 'viewer'].includes(user.role);
+  const seesPeopleFilter = OVERSIGHT_ROLES.includes(user.role);
 
   const [data, categories, people] = await Promise.all([
     listTransactions({ ...query, page, limit: 50 }),

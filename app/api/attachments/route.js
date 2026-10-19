@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic';
  * Only the roles that may record entries may attach to them.
  */
 export const POST = handler(async (request) => {
-  await requireRole('accountant', 'admin');
+  await requireRole('initiator', 'admin');
 
   let form;
   try {

@@ -37,24 +37,36 @@ first — the scripts read the font files that `next/font` fetched. Edit the mat
 
 ## Who does what
 
-The stored role keys and the names people see are deliberately not the same. The keys are what
-`requireRole()` checks and what sits in the database; renaming them would mean migrating every
-existing user, so only the labels in `ROLE_LABELS` changed.
+Every entry passes through four people, in order:
 
-| Key in code and database | Shown in the interface | Can do |
+1. **Initiator** records it.
+2. **Approver 1** checks it.
+3. **Accountant** pays out or confirms receipt, recording the date and a reference.
+4. **Approver 2** gives the final approval. Only then does it count towards balances and reports.
+
+Any approver or the accountant can instead **return** it to the initiator with a reason; the
+initiator's correction restarts it at Approver 1.
+
+| Role key | Shown in the interface | Can do |
 |---|---|---|
-| `accountant` | Accountant | Records entries; edits or voids **their own** entries **while still pending**; reads the ledger and reports; exports to Excel |
-| `auditor` | **Approver** | Approves, rejects and voids; reads the full audit trail and the exceptions page; closes months; exports. **Cannot record or edit entries** |
-| `admin` | Administrator | Everything an approver can do, plus managing people and budget lines |
+| `initiator` | Initiator | Records and imports entries; edits or voids **their own** while waiting for Approver 1 or after a return |
+| `approver1` | Approver 1 | First approval or return; voids; reads the audit trail and exceptions; closes months |
+| `accountant` | Accountant | Confirms the payment or receipt after Approver 1 |
+| `approver2` | Approver 2 | Final approval or return; voids; reads the audit trail and exceptions; closes months |
+| `admin` | Administrator | Can act at any stage (never twice on one entry), plus people and budget lines |
 | `viewer` | **Auditor** | Read-only: the ledger, reports, the audit trail and the exceptions page |
+
+Upgrading an existing database: run `node --env-file=.env.local scripts/migrate-four-stage-flow.mjs`
+once (old accountants become initiators, old approvers become Approver 1, approved entries are
+kept and marked legacy), then assign the Accountant and Approver 2 roles in Settings.
 
 Separation of duties is enforced in the route handlers, not in the interface:
 
-- **Nobody approves their own entry.** If the entry's `recordedBy` is the signed-in user, the
-  approve and reject routes return 403. Set `ALLOW_SELF_APPROVAL=true` only if one person
-  really does have to do both jobs.
-- The `approver` role is deliberately blocked from `POST /api/transactions` and
-  `PATCH /api/transactions/[id]`.
+- **Nobody acts twice on the same entry.** The initiator, Approver 1, the accountant and
+  Approver 2 must be four different people; the approve and reject routes return 403 to anyone
+  who already took part, the administrator included.
+- Only the role that owns a stage may act on it (`POST /api/transactions/[id]/approve` is
+  stage-aware); the administrator may act at any stage.
 - The interface hides buttons a role cannot use, but every route checks again.
 
 The Settings page is where budget lines, people and the monthly close live. Administrators
@@ -115,7 +127,6 @@ exception checks, so every screen has something in it.
 MONGODB_URI=mongodb+srv://USER:PASSWORD@cluster0.xxxx.mongodb.net/hub_ledger?retryWrites=true&w=majority&appName=Cluster0
 JWT_SECRET=generate-with-openssl-rand-base64-32
 CURRENCY=RWF
-ALLOW_SELF_APPROVAL=false
 LARGE_AMOUNT_THRESHOLD=100000
 SEED_ADMIN_NAME=Hub Admin
 SEED_ADMIN_EMAIL=admin@hub.rw
@@ -135,7 +146,7 @@ placeholders only.
 
 ## Deploying to Vercel
 
-1. Set `MONGODB_URI`, `JWT_SECRET`, `CURRENCY`, `ALLOW_SELF_APPROVAL` and
+1. Set `MONGODB_URI`, `JWT_SECRET`, `CURRENCY` and
    `LARGE_AMOUNT_THRESHOLD` in **Vercel → Settings → Environment Variables**, for all three
    environments (Production, Preview, Development). The `SEED_ADMIN_*` variables are only
    needed on your own machine.

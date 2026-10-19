@@ -4,17 +4,18 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { api } from '@/lib/api';
+import { CLOSER_ROLES, OVERSIGHT_ROLES } from '@/lib/enums';
 import { NAV_ICONS, SignOutIcon } from '@/components/Icons';
 
 const LINKS = [
   { href: '/', label: 'Overview' },
   { href: '/ledger', label: 'Ledger' },
   { href: '/approvals', label: 'Approvals', badge: true },
-  { href: '/audit', label: 'Audit trail', hideFrom: ['accountant'] },
-  { href: '/exceptions', label: 'Exceptions', hideFrom: ['accountant'] },
+  { href: '/audit', label: 'Audit trail', only: OVERSIGHT_ROLES },
+  { href: '/exceptions', label: 'Exceptions', only: OVERSIGHT_ROLES },
   { href: '/reports', label: 'Reports' },
-  // Auditors close months, which lives in Settings; the rest of the page is admin only.
-  { href: '/settings', label: 'Settings', only: ['admin', 'auditor'] },
+  // Approvers close months, which lives in Settings; the rest of the page is admin only.
+  { href: '/settings', label: 'Settings', only: CLOSER_ROLES },
 ];
 
 export function NavLinks({ role, pendingCount = 0 }) {

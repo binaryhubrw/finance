@@ -4,6 +4,7 @@ import Category from '@/models/Category';
 import User from '@/models/User';
 import Transaction from '@/models/Transaction';
 import ClosedPeriod from '@/models/ClosedPeriod';
+import { CLOSER_ROLES, IN_FLIGHT } from '@/lib/enums';
 import { plain } from '@/lib/audit';
 import { balanceBefore } from '@/lib/queries';
 import { monthEnd, monthStart, monthLabel } from '@/lib/period';
@@ -25,7 +26,7 @@ export default async function SettingsPage() {
   await db();
 
   const isAdmin = user.role === 'admin';
-  const canClose = isAdmin || user.role === 'auditor';
+  const canClose = CLOSER_ROLES.includes(user.role);
 
   const [categories, people, periods] = await Promise.all([
     isAdmin ? Category.find({}).sort({ kind: 1, name: 1 }).lean() : Promise.resolve([]),
@@ -50,7 +51,7 @@ export default async function SettingsPage() {
         const [bookBalance, pending] = await Promise.all([
           balanceBefore(monthEnd(year, month)),
           Transaction.countDocuments({
-            status: 'pending',
+            status: { $in: IN_FLIGHT },
             date: { $gte: monthStart(year, month), $lt: monthEnd(year, month) },
           }),
         ]);

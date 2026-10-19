@@ -37,8 +37,7 @@ export const GET = handler(async (_request, { params }) => {
 });
 
 export const PATCH = handler(async (request, { params }) => {
-  // Auditors are deliberately blocked here too.
-  const actor = await requireRole('accountant', 'admin');
+  const actor = await requireRole('initiator', 'admin');
   const { id } = await params;
   const body = await readBody(request);
 
@@ -48,13 +47,15 @@ export const PATCH = handler(async (request, { params }) => {
   if (entry.status === 'void') {
     throw conflict('This entry was voided, so it can no longer be edited. Record a new entry instead.');
   }
-  if (actor.role === 'accountant') {
+  if (actor.role === 'initiator') {
     if (String(entry.recordedBy) !== actor.id) {
       throw forbidden('You can only edit entries you recorded yourself.');
     }
-    if (entry.status !== 'pending') {
+    // Waiting on Approver 1, or returned to you. Once it is further along the
+    // approvers are relying on what they saw, so it can no longer change.
+    if (entry.status !== 'pending' && entry.status !== 'rejected') {
       throw forbidden(
-        'This entry has already been reviewed, so only an administrator can change it.',
+        'This entry is already being processed, so only an administrator can change it.',
       );
     }
   }
@@ -131,12 +132,17 @@ export const PATCH = handler(async (request, { params }) => {
     return ok({ transaction: plain(entry.toObject()), unchanged: true });
   }
 
-  // Editing something that has already been reviewed sends it back to the queue.
-  const wasReviewed = before.status === 'approved' || before.status === 'rejected';
+  // Editing anything past Approver 1 (or returned) discards every earlier
+  // decision: the whole flow runs again from the first approval.
+  const wasReviewed = before.status !== 'pending';
   if (wasReviewed) {
     entry.status = 'pending';
     entry.reviewedBy = null;
     entry.reviewedAt = null;
+    entry.rejectedStage = '';
+    entry.approval1 = null;
+    entry.settlement = null;
+    entry.approval2 = null;
     entry.editedAfterReview = true;
     changes.push({ field: 'status', from: before.status, to: 'pending' });
   }

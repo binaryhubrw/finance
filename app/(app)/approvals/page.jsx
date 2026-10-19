@@ -4,7 +4,14 @@ import { requireUser } from '@/lib/session';
 import Transaction from '@/models/Transaction';
 import Comment from '@/models/Comment';
 import { formatDate, formatDateTime, money, relativeDays } from '@/lib/format';
-import { METHOD_LABELS, STATUS_LABELS } from '@/lib/enums';
+import {
+  IN_FLIGHT,
+  METHOD_LABELS,
+  ROLE_LABELS,
+  ROLE_OF_STAGE,
+  STATUS_LABELS,
+} from '@/lib/enums';
+import { participants } from '@/lib/flow';
 import Money from '@/components/Money';
 import ReviewActions from '@/components/ReviewActions';
 import { CheckCircleIcon, ClockIcon, CrossCircleIcon, StackIcon } from '@/components/Icons';
@@ -20,7 +27,7 @@ export const dynamic = 'force-dynamic';
  * therefore means every entry that has been through review or is waiting
  * for it.
  */
-const REVIEW_STATES = ['pending', 'approved', 'rejected'];
+const REVIEW_STATES = [...IN_FLIGHT, 'approved', 'rejected'];
 
 const TABS = [
   {
@@ -31,17 +38,37 @@ const TABS = [
     icon: StackIcon,
     tone: 'text-accent',
     empty: 'Nothing here yet.',
-    emptyNote: 'Entries appear the moment the accountant records them.',
+    emptyNote: 'Entries appear the moment the initiator records them.',
   },
   {
     status: 'pending',
-    label: 'Pending',
-    title: 'Waiting for review',
-    blurb: 'Waiting for a decision. None of it counts towards the balance yet.',
+    label: 'Approver 1',
+    title: 'Waiting for Approver 1',
+    blurb: 'Recorded, waiting for the first approval. None of it counts towards the balance yet.',
     icon: ClockIcon,
     tone: 'text-flag',
-    empty: 'Nothing waiting. The accountant is up to date.',
+    empty: 'Nothing waiting for Approver 1.',
     emptyNote: 'New entries appear here the moment they are recorded.',
+  },
+  {
+    status: 'with_accountant',
+    label: 'Accountant',
+    title: 'Waiting for the accountant',
+    blurb: 'Approved once. The accountant pays out or confirms receipt of the money.',
+    icon: ClockIcon,
+    tone: 'text-accent',
+    empty: 'Nothing waiting for the accountant.',
+    emptyNote: 'Entries land here once Approver 1 has approved them.',
+  },
+  {
+    status: 'final_review',
+    label: 'Approver 2',
+    title: 'Waiting for final approval',
+    blurb: 'Paid or received. Approver 2 gives the final approval, and only then does it count.',
+    icon: ClockIcon,
+    tone: 'text-accent',
+    empty: 'Nothing waiting for final approval.',
+    emptyNote: 'Entries land here once the accountant has confirmed the money moved.',
   },
   {
     status: 'approved',
@@ -51,22 +78,24 @@ const TABS = [
     icon: CheckCircleIcon,
     tone: 'text-credit',
     empty: 'Nothing approved yet.',
-    emptyNote: 'Clear the pending queue and entries land here.',
+    emptyNote: 'Entries land here after the final approval.',
   },
   {
     status: 'rejected',
-    label: 'Rejected',
-    title: 'Sent back',
-    blurb: 'Sent back with a reason. These do not count until they are corrected.',
+    label: 'Returned',
+    title: 'Returned to the initiator',
+    blurb: 'Sent back with a reason. These do not count until corrected, and then they restart at Approver 1.',
     icon: CrossCircleIcon,
     tone: 'text-debit',
-    empty: 'Nothing rejected.',
-    emptyNote: 'Rejecting an entry always records why, and it shows up here.',
+    empty: 'Nothing returned.',
+    emptyNote: 'Returning an entry always records why, and it shows up here.',
   },
 ];
 
 const EDGE = {
   pending: 'border-l-flag',
+  with_accountant: 'border-l-accent',
+  final_review: 'border-l-accent',
   approved: 'border-l-credit',
   rejected: 'border-l-debit',
   void: 'border-l-rule-strong',
@@ -115,6 +144,9 @@ export default async function ApprovalsPage({ searchParams }) {
       .populate('category', 'name kind')
       .populate('recordedBy', 'name')
       .populate('reviewedBy', 'name')
+      .populate('approval1.by', 'name')
+      .populate('settlement.by', 'name')
+      .populate('approval2.by', 'name')
       .lean(),
   ]);
 
@@ -132,9 +164,11 @@ export default async function ApprovalsPage({ searchParams }) {
       ? { count: sum('count'), value: sum('value'), net: sum('net') }
       : (tallies.find((row) => row._id === status) ?? { count: 0, value: 0, net: 0 });
 
-  const canReview = user.role === 'auditor' || user.role === 'admin';
+  // The role that owns each status. An administrator may act at any of them.
+  const canActOn = (status) =>
+    IN_FLIGHT.includes(status) && (user.role === 'admin' || user.role === ROLE_OF_STAGE[status]);
   const { count: total, net } = tally(active.status);
-  const showActions = active.status === 'pending' && canReview;
+  const showActions = canActOn(active.status);
   const reviewable = sum('count');
 
   return (
@@ -203,10 +237,10 @@ export default async function ApprovalsPage({ searchParams }) {
           <p className="text-[13px] text-ink-soft">
             {total === 0
               ? active.blurb
-              : active.status === 'pending'
+              : IN_FLIGHT.includes(active.status)
                 ? `${total} ${total === 1 ? 'entry' : 'entries'}, newest first. Together they would move the balance by ${money(net)}.`
                 : active.status === 'all'
-                  ? `${total} ${total === 1 ? 'entry' : 'entries'}, newest first — pending, approved and rejected together.`
+                  ? `${total} ${total === 1 ? 'entry' : 'entries'}, newest first — in progress, approved and returned together.`
                   : `${total} ${total === 1 ? 'entry' : 'entries'}, most recently reviewed first.`}
             {total > LIST_LIMIT ? (
               <>
@@ -236,7 +270,7 @@ export default async function ApprovalsPage({ searchParams }) {
                 <th scope="col" className="w-[150px]">Recorded by</th>
                 <th scope="col" className="w-[130px] text-right">Amount</th>
                 <th scope="col" className={showActions ? 'w-[200px]' : 'w-[240px]'}>
-                  {active.status === 'pending'
+                  {IN_FLIGHT.includes(active.status)
                     ? 'Decision'
                     : active.status === 'approved'
                       ? 'Approved by'
@@ -254,7 +288,18 @@ export default async function ApprovalsPage({ searchParams }) {
                   !entry.reference &&
                   !entry.receiptUrl &&
                   !entry.attachment;
-                const ownEntry = String(entry.recordedBy?._id ?? entry.recordedBy) === user.id;
+                const inFlight = IN_FLIGHT.includes(entry.status);
+                const took = participants(entry);
+                const blocked = !inFlight
+                  ? ''
+                  : took.includes(user.id)
+                    ? 'You already took part in this entry, so someone else has to handle this step.'
+                    : '';
+                const trail = [
+                  ['Approver 1', entry.approval1],
+                  [entry.type === 'in' ? 'Received' : 'Paid', entry.settlement],
+                  ['Approver 2', entry.approval2],
+                ].filter(([, stage]) => stage?.by);
 
                 return (
                   <tr key={String(entry._id)}>
@@ -299,7 +344,14 @@ export default async function ApprovalsPage({ searchParams }) {
                           {entry.status === 'pending' ? null : (
                             <AttachmentPreview attachment={entry.attachment} />
                           )}
-                          <EntryComments entry={entry} count={commentsBy.get(String(entry._id)) ?? 0} />
+                          <EntryComments
+                            entry={{
+                              _id: String(entry._id),
+                              description: entry.description,
+                              amount: entry.amount,
+                            }}
+                            count={commentsBy.get(String(entry._id)) ?? 0}
+                          />
                           {entry.receiptUrl ? (
                             <a
                               className="link"
@@ -338,25 +390,44 @@ export default async function ApprovalsPage({ searchParams }) {
                     </td>
 
                     <td>
-                      {entry.status === 'pending' ? (
+                      {inFlight ? (
                         <div className="flex flex-col items-stretch gap-2 sm:items-end">
                           {entry.attachment ? (
                             <AttachmentPreview attachment={entry.attachment} />
                           ) : entry.type === 'out' ? (
                             <p className="text-[12px] text-flag sm:text-right">No receipt to check</p>
                           ) : null}
-                          {canReview ? (
-                            <ReviewActions entryId={String(entry._id)} ownEntry={ownEntry} />
+                          {canActOn(entry.status) ? (
+                            <ReviewActions
+                              entryId={String(entry._id)}
+                              status={entry.status}
+                              type={entry.type}
+                              blocked={blocked}
+                            />
                           ) : (
                             <p className="text-[12px] text-ink-soft sm:text-right">
-                              An approver reviews this one.
+                              Waiting for {ROLE_LABELS[ROLE_OF_STAGE[entry.status]]}.
                             </p>
                           )}
+                          {trail.length ? (
+                            <ul className="text-[12px] text-ink-soft sm:text-right">
+                              {trail.map(([label, stage]) => (
+                                <li key={label}>
+                                  {label}: {stage.by?.name ?? 'someone since removed'}
+                                  {stage.paidOn ? ` · ${formatDate(stage.paidOn)}` : ''}
+                                  {stage.paymentRef ? ` · ${stage.paymentRef}` : ''}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : null}
                         </div>
                       ) : (
                         <div>
                           <p className="text-[13px]">
-                            {entry.reviewedBy?.name ?? 'someone since removed'}
+                            {entry.reviewedBy?.name ?? (entry.legacy ? 'Approved before the four-step flow' : 'someone since removed')}
+                            {entry.status === 'rejected' && entry.rejectedStage
+                              ? ` (${ROLE_LABELS[ROLE_OF_STAGE[entry.rejectedStage]]})`
+                              : ''}
                           </p>
                           <p className="label label-quiet mt-1">
                             {entry.reviewedAt ? formatDateTime(entry.reviewedAt) : 'date not recorded'}

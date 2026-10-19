@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 
 export const POST = handler(async (request, { params }) => {
   // Nothing is ever deleted. Voiding leaves the entry visible with its reason.
-  const actor = await requireRole('auditor', 'admin', 'accountant');
+  const actor = await requireRole('admin', 'approver1', 'approver2', 'initiator');
   const { id } = await params;
   const { reviewNote } = await readBody(request);
 
@@ -26,13 +26,13 @@ export const POST = handler(async (request, { params }) => {
   if (!entry) throw notFound('That entry no longer exists.');
   if (entry.status === 'void') throw conflict('This entry is already void.');
 
-  // An accountant may withdraw their own entry, but only while it is still pending.
-  if (actor.role === 'accountant') {
+  // An initiator may withdraw their own entry, but only before Approver 1 has acted on it.
+  if (actor.role === 'initiator') {
     if (String(entry.recordedBy) !== actor.id) {
       throw forbidden('You can only void entries you recorded yourself.');
     }
-    if (entry.status !== 'pending') {
-      throw forbidden('This entry has already been reviewed. Ask an approver to void it.');
+    if (entry.status !== 'pending' && entry.status !== 'rejected') {
+      throw forbidden('This entry is already being processed. Ask an approver to void it.');
     }
   }
 

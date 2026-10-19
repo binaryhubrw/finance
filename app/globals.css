@@ -307,6 +307,8 @@
     white-space: nowrap;
   }
   .badge-pending  { color: var(--color-flag);   background: var(--color-flag-soft);  border-color: rgba(163, 90, 7, 0.22); }
+  .badge-with_accountant,
+  .badge-final_review { color: var(--color-accent-deep); background: var(--color-sunk); border-color: var(--color-rule-strong); }
   .badge-approved { color: var(--color-credit); background: #e7f5ef;                 border-color: rgba(15, 122, 84, 0.22); }
   .badge-rejected { color: var(--color-debit);  background: #fdeeec;                 border-color: rgba(192, 57, 43, 0.22); }
   .badge-void     { color: var(--color-muted);  background: var(--color-sunk);       border-color: var(--color-rule-strong); }
@@ -368,6 +370,8 @@
      meaning what they mean everywhere else. */
   .tab-all      { --tab-accent: var(--color-accent); --tab-ink: var(--color-accent-deep); }
   .tab-pending  { --tab-accent: var(--color-flag);   --tab-ink: var(--color-flag-deep); }
+  .tab-with_accountant,
+  .tab-final_review { --tab-accent: var(--color-accent); --tab-ink: var(--color-accent-deep); }
   .tab-approved { --tab-accent: var(--color-credit); --tab-ink: var(--color-credit-deep); }
   .tab-rejected { --tab-accent: var(--color-debit);  --tab-ink: var(--color-debit-deep); }
 
@@ -405,6 +409,8 @@
   .tab-share-split > span { border-radius: 0; opacity: 0.75; }
   .tab[aria-current='page'] .tab-share-split > span { opacity: 1; }
   .seg-pending  { background: var(--color-flag); }
+  .seg-with_accountant,
+  .seg-final_review { background: var(--color-accent); }
   .seg-approved { background: var(--color-credit); }
   .seg-rejected { background: var(--color-debit); }
 

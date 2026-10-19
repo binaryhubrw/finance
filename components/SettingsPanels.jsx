@@ -312,7 +312,7 @@ export function CategoriesPanel({ categories }) {
 
 export function PeoplePanel({ people, currentUserId }) {
   const router = useRouter();
-  const [adding, setAdding] = useState({ name: '', email: '', role: 'accountant', password: '' });
+  const [adding, setAdding] = useState({ name: '', email: '', role: 'initiator', password: '' });
   const [resetting, setResetting] = useState(null);
   const [newPassword, setNewPassword] = useState('');
   const [error, setError] = useState('');
@@ -349,7 +349,7 @@ export function PeoplePanel({ people, currentUserId }) {
             event.preventDefault();
             run(async () => {
               await api('/api/auth/users', { method: 'POST', body: adding });
-              setAdding({ name: '', email: '', role: 'accountant', password: '' });
+              setAdding({ name: '', email: '', role: 'initiator', password: '' });
             });
           }}
         >

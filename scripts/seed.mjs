@@ -99,17 +99,29 @@ async function seedDemo(admin) {
     return;
   }
 
-  const accountant = await ensureUser({
+  const initiator = await ensureUser({
     name: 'Claudine Uwase',
+    email: 'initiator@hub.rw',
+    role: 'initiator',
+    password: 'initiator-demo-1',
+  });
+  const approver1 = await ensureUser({
+    name: 'Eric Habimana',
+    email: 'approver1@hub.rw',
+    role: 'approver1',
+    password: 'approver1-demo-1',
+  });
+  const payer = await ensureUser({
+    name: 'Josiane Mukamana',
     email: 'accountant@hub.rw',
     role: 'accountant',
     password: 'accountant-demo-1',
   });
-  const auditor = await ensureUser({
-    name: 'Eric Habimana',
-    email: 'auditor@hub.rw',
-    role: 'auditor',
-    password: 'auditor-demo-1',
+  const approver2 = await ensureUser({
+    name: 'Patrick Nsengimana',
+    email: 'approver2@hub.rw',
+    role: 'approver2',
+    password: 'approver2-demo-1',
   });
 
   const categories = await Category.find({}).lean();
@@ -135,6 +147,7 @@ async function seedDemo(admin) {
 
     const recordedAt = new Date(entry.date.getTime() + DAY + workingHour());
     const reviewedAt = new Date(entry.date.getTime() + 2 * DAY + workingHour());
+    const status = entry.status ?? 'approved';
     entries.push({
       method: 'cash',
       reference: '',
@@ -142,9 +155,23 @@ async function seedDemo(admin) {
       payee: '',
       note: '',
       status: 'approved',
-      recordedBy: accountant._id,
-      reviewedBy: entry.status === 'pending' ? null : auditor._id,
+      recordedBy: initiator._id,
+      // Whoever ended the entry: Approver 2 for an approval, Approver 1 otherwise.
+      reviewedBy:
+        status === 'pending' ? null : (status === 'approved' ? approver2 : approver1)._id,
       reviewedAt: entry.status === 'pending' ? null : reviewedAt,
+      ...(status !== 'approved'
+        ? {}
+        : {
+            approval1: { by: approver1._id, at: new Date(recordedAt.getTime() + 3_600_000) },
+            settlement: {
+              by: payer._id,
+              at: new Date(recordedAt.getTime() + 2 * 3_600_000),
+              paidOn: entry.date,
+              paymentRef: '',
+            },
+            approval2: { by: approver2._id, at: reviewedAt },
+          }),
       reviewNote: '',
       editedAfterReview: false,
       createdAt: recordedAt,
@@ -345,7 +372,7 @@ async function seedDemo(admin) {
     reviewedAt: null,
   });
 
-  // Rejected, with the reason the accountant needs.
+  // Returned to the initiator, with the reason they need.
   push({
     date: day(1, 21),
     description: 'Team lunch',
@@ -354,6 +381,7 @@ async function seedDemo(admin) {
     amount: 64000,
     method: 'cash',
     status: 'rejected',
+    rejectedStage: 'pending',
     reviewNote: 'No receipt attached and the amount does not match the order slip.',
   });
 
@@ -379,8 +407,8 @@ async function seedDemo(admin) {
       entity: 'transaction',
       entityId: entry._id,
       action: 'create',
-      actor: accountant._id,
-      actorName: accountant.name,
+      actor: initiator._id,
+      actorName: initiator.name,
       at: entry.createdAt,
       summary: `Recorded ${entry.type === 'in' ? 'money in' : 'money out'} of ${entry.amount.toLocaleString('en-US')} for “${entry.description}”`,
       snapshot: entry.toObject(),
@@ -391,8 +419,8 @@ async function seedDemo(admin) {
         entity: 'transaction',
         entityId: entry._id,
         action: entry.status === 'approved' ? 'approve' : entry.status === 'rejected' ? 'reject' : 'void',
-        actor: auditor._id,
-        actorName: auditor.name,
+        actor: approver1._id,
+        actorName: approver1.name,
         at: entry.reviewedAt ?? entry.updatedAt,
         summary:
           entry.status === 'approved'
@@ -408,8 +436,8 @@ async function seedDemo(admin) {
         entity: 'transaction',
         entityId: entry._id,
         action: 'update',
-        actor: accountant._id,
-        actorName: accountant.name,
+        actor: initiator._id,
+        actorName: initiator.name,
         at: new Date(entry.updatedAt.getTime() + DAY),
         summary: 'Changed amount 72,000 → 78,000 — back to pending after review',
         changes: [

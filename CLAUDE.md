@@ -25,10 +25,18 @@ build has to have happened first. Edit `docs/*.template.html`, never the generat
 
 ## The rule the whole system exists to enforce
 
-One person records money, a **different** person approves it. Until approval an entry is
-inert: visible in the ledger, absent from every balance and report. Nothing is ever deleted —
+Four **different** people handle every entry: Initiator records, Approver 1 checks, Accountant
+pays or confirms receipt, Approver 2 gives final approval. Until final approval an entry is
+inert: visible in the ledger, absent from every balance and report. A return at any stage sends
+it to the initiator, and their edit restarts it at Approver 1. Nothing is ever deleted —
 mistakes are voided with a reason and stay visible. Every mutation appends to an audit log
 that has no update or delete path anywhere in the API, and none may be added.
+
+Statuses (`lib/enums.js`): `pending` (Awaiting Approver 1) → `with_accountant` → `final_review`
+→ `approved`; plus `rejected` (shown as "Returned") and `void`. `IN_FLIGHT` is the three
+waiting states. The stage gate is `assertCanAct()` in `lib/flow.js`: right role (admin may act
+anywhere) and nobody who already appears in `recordedBy` / `approval1` / `settlement` /
+`approval2`. Entries approved before this flow carry `legacy: true`.
 
 Read `BUILD.md` (the original specification) before changing behaviour; `MANUAL.md` and
 `SCREENS.md` are the user-facing documents and describe what is currently true on screen.
@@ -74,11 +82,11 @@ and none should be added.
 
 ### Auth
 
-**Role keys and role labels differ on purpose.** The database and every `requireRole()` call
-use `admin` / `auditor` / `accountant` / `viewer`; the interface shows `auditor` as
-**Approver** and `viewer` as **Auditor**, through `ROLE_LABELS` in `lib/enums.js`. Renaming
-the keys would mean migrating existing users, so it was not done. Never rename a key to match
-a label without that migration, and write user-facing copy with the label, not the key.
+**Role keys:** `admin` / `initiator` / `approver1` / `accountant` / `approver2` / `viewer`.
+The interface shows `viewer` as **Auditor** through `ROLE_LABELS` in `lib/enums.js`; write
+user-facing copy with the label, not the key. `accountant` changed meaning (it used to be the
+person who recorded entries) in `scripts/migrate-four-stage-flow.mjs`, which is guarded to run
+once — never re-run it by hand against a migrated database.
 
 `requireUser()` / `requireRole()` in `lib/session.js` verify the JWT **and** re-read the user
 from the database on every call, so deactivating someone takes effect immediately rather than

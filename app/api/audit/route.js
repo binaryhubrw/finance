@@ -1,3 +1,4 @@
+import { OVERSIGHT_ROLES } from '@/lib/enums';
 import mongoose from 'mongoose';
 import AuditLog from '@/models/AuditLog';
 import { handler, ok, searchParams } from '@/lib/http';
@@ -10,7 +11,7 @@ export const dynamic = 'force-dynamic';
 
 export const GET = handler(async (request) => {
   // The trail is for the people who answer for the money.
-  await requireRole('auditor', 'admin', 'viewer');
+  await requireRole(OVERSIGHT_ROLES);
   const q = searchParams(request);
 
   const filter = {};

@@ -18,7 +18,7 @@ const ROWS = 200;
  * is also how the budget lines stay readable.
  */
 export const GET = handler(async () => {
-  await requireRole('accountant', 'admin');
+  await requireRole('initiator', 'admin');
 
   const categories = await Category.find({ active: true }).sort({ kind: 1, name: 1 }).lean();
   const anIncome = categories.find((c) => c.kind === 'income')?.name ?? 'Grants & donations';

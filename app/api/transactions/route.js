@@ -22,7 +22,7 @@ export const GET = handler(async (request) => {
 
 export const POST = handler(async (request) => {
   // Auditors are deliberately blocked here. Separation of duties is the point.
-  const actor = await requireRole('accountant', 'admin');
+  const actor = await requireRole('initiator', 'admin');
   const body = await readBody(request);
 
   const details = {};

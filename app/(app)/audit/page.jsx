@@ -5,6 +5,7 @@ import AuditLog from '@/models/AuditLog';
 import User from '@/models/User';
 import { plain } from '@/lib/audit';
 import { activity, startOfDay, endOfDay } from '@/lib/queries';
+import { OVERSIGHT_ROLES } from '@/lib/enums';
 import AuditTrail from '@/components/AuditTrail';
 
 export const runtime = 'nodejs';
@@ -15,7 +16,7 @@ const LIMIT = 50;
 export default async function AuditPage({ searchParams }) {
   const user = await requireUser();
 
-  if (user.role === 'accountant') {
+  if (!OVERSIGHT_ROLES.includes(user.role)) {
     return (
       <div className="card px-5 py-8">
         <p className="eyebrow">Audit trail</p>

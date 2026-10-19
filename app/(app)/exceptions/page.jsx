@@ -2,6 +2,7 @@ import { db } from '@/lib/db';
 import { requireUser } from '@/lib/session';
 import { exceptions } from '@/lib/queries';
 import { money } from '@/lib/format';
+import { OVERSIGHT_ROLES } from '@/lib/enums';
 import { Section, EntryList, DuplicateList } from '@/components/ExceptionSections';
 
 export const runtime = 'nodejs';
@@ -10,7 +11,7 @@ export const dynamic = 'force-dynamic';
 export default async function ExceptionsPage({ searchParams }) {
   const user = await requireUser();
 
-  if (user.role === 'accountant') {
+  if (!OVERSIGHT_ROLES.includes(user.role)) {
     return (
       <div className="card px-5 py-8">
         <p className="eyebrow">Exceptions</p>

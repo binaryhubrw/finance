@@ -1,11 +1,22 @@
 import mongoose from 'mongoose';
-import { METHODS, STATUSES, TYPES } from '../lib/enums.js';
+import { IN_FLIGHT, METHODS, STATUSES, TYPES } from '../lib/enums.js';
 
 const round2 = (value) => {
   const n = Number(value);
   if (!Number.isFinite(n)) return value;
   return Math.round((n + Number.EPSILON) * 100) / 100;
 };
+
+const stageSchema = (extra = {}) =>
+  new mongoose.Schema(
+    {
+      by: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+      at: { type: Date, default: Date.now },
+      note: { type: String, trim: true, maxlength: 500, default: '' },
+      ...extra,
+    },
+    { _id: false },
+  );
 
 const transactionSchema = new mongoose.Schema(
   {
@@ -66,9 +77,26 @@ const transactionSchema = new mongoose.Schema(
 
     status: { type: String, enum: STATUSES, default: 'pending' },
     recordedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    // The latest decision that ended or returned an entry: final approval,
+    // a return to the initiator, or a void. Earlier stages live below.
     reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     reviewedAt: { type: Date, default: null },
     reviewNote: { type: String, trim: true, maxlength: 500, default: '' },
+    // Which stage returned the entry, so the initiator knows who to ask.
+    rejectedStage: { type: String, enum: [...IN_FLIGHT, ''], default: '' },
+
+    // One record per stage, cleared whenever the initiator resubmits. Entries
+    // approved before the four-stage flow have none of these (`legacy`).
+    approval1: { type: stageSchema(), default: null },
+    settlement: {
+      type: stageSchema({
+        paidOn: { type: Date },
+        paymentRef: { type: String, trim: true, maxlength: 120, default: '' },
+      }),
+      default: null,
+    },
+    approval2: { type: stageSchema(), default: null },
+    legacy: { type: Boolean, default: false },
     editedAfterReview: { type: Boolean, default: false },
   },
   { timestamps: true },

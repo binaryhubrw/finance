@@ -34,7 +34,7 @@ export const POST = handler(async (request) => {
   if (!password || String(password).length < 8) {
     details.password = 'Set a password of at least 8 characters.';
   }
-  if (role && !ROLES.includes(role)) details.role = 'Choose one of the four roles.';
+  if (role && !ROLES.includes(role)) details.role = 'Choose one of the listed roles.';
   if (Object.keys(details).length) {
     throw badRequest('Some fields need attention before this person can be added.', details);
   }

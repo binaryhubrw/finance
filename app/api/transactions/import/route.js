@@ -20,7 +20,7 @@ const MAX_BYTES = 2 * 1024 * 1024;
  * refused whole — a half-imported cashbook is worse than none.
  */
 export const POST = handler(async (request) => {
-  const actor = await requireRole('accountant', 'admin');
+  const actor = await requireRole('initiator', 'admin');
 
   let form;
   try {
